@@ -1,5 +1,6 @@
-# coding 'utf-8'
-# zsj 20180705
+# wx 20160908
+
+
 import numpy as np
 import math
 import sympy
@@ -9,12 +10,14 @@ from scipy.optimize import leastsq
 import random
 import copy
 
+
+
 def coarseGrain(field, coarseShape):
     rowFine = field.shape[0]
     rowRatio = sympy.S(rowFine) / coarseShape[0]
     coarseField = np.zeros((coarseShape), np.float)
 
-    "¶şÎ¬"
+    "äºŒç»´"##################
     collumFine = field.shape[1]
     collumRatio = sympy.S(collumFine) / coarseShape[1]
     right = 0
@@ -66,10 +69,60 @@ def normalize(field):
         return field
 
 
+"é€šè¿‡ç»Ÿè®¡çŸ©æ³•æ±‚ä¸€ä¸ªé™é›¨åœºçš„å¤šé‡åˆ†å½¢ï¼Œè®¡ç®—æ‰€éœ€çš„å„ç§å‚æ•°å¦‚ç»Ÿè®¡çŸ©momentï¼Œå°ºåº¦å…°å¸ƒè¾¾ï¼ŒçŸ©çš„é˜¶qï¼Œä»¥åŠè´¨é‡æŒ‡æ•°å‡½æ•°tao(q)"
 
 
+def mutifractalAnalysis(rawfield, branch=2):
+    "é¦–å…ˆå°†æ¶ˆé™¤è¶‹åŠ¿æ³¢åŠ¨ï¼ˆDetrended Fluctuationï¼‰é™æ°´åœºå½’ä¸€åŒ–"
+    field = normalize(rawfield)
+    # field=rawfield
+    fieldSize = field.shape[0]
+    layers = np.arange(0, int(math.log(fieldSize, branch)))
+    scales = branch ** layers
+    print("layers:", layers, "scales:", scales)
+    q = np.linspace(-5, 5, 11)
+    moment = np.zeros((len(layers), len(q)))
 
-"ÀÕÈÃµÂ±ä»¯Çó¶àÖØ·ÖĞÎÎ¬Æ×f(a)"
+    "æ±‚moment"
+    for i in range(0, len(layers)):
+        for j in range(0, len(q)):
+            distrib = coarseGrain(field, [x // scales[i] for x in field.shape])     ##################
+            positiveDist = distrib[distrib > 0]
+            # sum_positiveDist=np.sum(positiveDist)
+            moment[i, j] = np.sum(positiveDist ** q[j])
+            # print("distrib",distrib,"q[j]",q[j],"moment[i,j]",moment[i,j])
+
+    "æ±‚tao(q),tao(q)å°±æ˜¯æ–œç‡"
+    k1 = np.zeros(moment.shape[1])  # å­˜æ”¾æ–œç‡
+    b1 = np.zeros(moment.shape[1])  # å­˜æ”¾æˆªè·
+    R1_Squared = np.zeros(moment.shape[1])  # å­˜æ”¾R2
+    # k2=np.zeros(positiveDist[1])
+    # b2=np.zeros(positiveDist[1])
+    # R2_Squared=np.zeros(moment.shape[1])
+    lambd = scales
+    X = np.log(lambd) / np.log(2)  # logä»¥2ä¸ºåº•çš„lambda,çº¿æ€§æœ€å°äºŒä¹˜çš„Xè¾“å…¥
+    X = sm.add_constant(X.T)  # åŠ ä¸Šæˆªè·é¡¹
+    # for i in range(0,positiveDist.shape[1]):
+    #        Y2=np.log(positiveDist[:,i])/np.log(2)
+    #        results2=sm.OLS(Y2,X).fit()
+    #        k2[i]=results2.params[1]
+    #        b2[i]=results2.params[0]
+    #        R2_Squared[i]=results2.rsquared
+    #        print("k2",k2[i],"b2",b2[i],"r22",R2_Squared[i])
+    for i in range(0, moment.shape[1]):
+        Y1 = np.log(moment[:, i]) / np.log(2)  # logä»¥2ä¸ºåº•çš„momentï¼Œçº¿æ€§æœ€å°äºŒä¹˜çš„Xè¾“å…¥
+        results1 = sm.OLS(Y1, X).fit()  # logä»¥2ä¸ºåº•çš„momentå’Œlambdaçš„çº¿æ€§æ‹Ÿåˆ
+        k1[i] = results1.params[1]  # æ–œç‡
+        b1[i] = results1.params[0]  # æˆªè·
+        R1_Squared[i] = results1.rsquared
+        print("k1", k1[i], "b1", b1[i], "r21", R1_Squared[i])
+
+    plotMoment_lambd(scales, q, k1, b1, moment, R1_Squared)
+    plotD_q(k1, q)
+    return (scales, q, k1, b1, moment, R1_Squared)
+
+
+"å‹’è®©å¾·å˜åŒ–æ±‚å¤šé‡åˆ†å½¢ç»´è°±f(a)"
 
 
 def legendre(rawfield, branch=2):
@@ -102,26 +155,24 @@ def legendre(rawfield, branch=2):
     return (a, f)
 
 
-"»æÖÆlogÒÔ2Îªµ×µÄmomentºÍlambdaµÄÍ¼"
+"ç»˜åˆ¶logä»¥2ä¸ºåº•çš„momentå’Œlambdaçš„å›¾"
 
 def plotMoment_lambd(scale, q, k, b, moment, rsquared, name=""):
     plt.figure(1)
     lambd = scale
-    # lambd = scale[::-1]
     x = np.log(lambd) / np.log(2)
     for j in range(0, moment.shape[1]):
         y = np.log(moment[:, j]) / np.log(2)
-        plt.plot(x, y,"-x")
+        plt.scatter(x, y)
         plt.plot(x, k[j] * x + b[j], "-")
-        plt.text(x[-2], y[0], 'q=' + str(q[j])[0:4], rotation=-5)
-        print("x:", x, "y:", y)
-#        plt.text(x[-3], y[-3], 'q=' + str(q[j])[0:4] + ',$R^2=$' + str(rsquared[j])[0:6],rotation=-5)  # ½«qºÍr2µÄÖµÏÔÊ¾ÔÚÍ¼ÉÏ£¬ÒÔ¼°ÏÔÊ¾µÄÎ»ÖÃ
-    plt.xlim(-2, 6)
-    plt.ylim(-500, 500)
+        plt.text(x[0], y[0], 'q=' + str(q[j])[0:4], rotation=-5)
+#        plt.text(x[-3], y[-3], 'q=' + str(q[j])[0:4] + ',$R^2=$' + str(rsquared[j])[0:6],rotation=-5)  # å°†qå’Œr2çš„å€¼æ˜¾ç¤ºåœ¨å›¾ä¸Šï¼Œä»¥åŠæ˜¾ç¤ºçš„ä½ç½®
+    plt.xlim(-5, 7)
+    plt.ylim(-50, 100)
     plt.xlabel(r'$Log_2[\lambda]$')
     plt.ylabel(r'$Log_2[M(\lambda,q)]$')
     # plt.savefig('C:/Users/xia/Desktop/20060101vs20060622vs20061025/TRMM3b43200606/'+"momentscale20060625256"+name+".png",dpi=300)
-    # plt.savefig('C:/Users/xia/Desktop/2006_2010/201007/' + "momentscale2010070832323" + name + ".png", dpi=300)###Õâ¸ö
+    plt.savefig('C:/Users/xia/Desktop/æ–°å®éªŒ/201003/' + "momentscale201003303232" + name + ".png", dpi=300)
     # plt.close(1)
 
 
@@ -134,34 +185,32 @@ def plotD_q(k, q, name=""):
             D_q = taoq / (q[i] - 1)
         else:
             D_q = d1_taoq[i]
-    print("D(q):",D_q)
-    # plt.axis([-5, -2,5 ,4])
-    plt.plot(q, D_q, "-o", label=name,color='black')
+    # print("D(q):",D_q)
+    plt.plot(q, D_q, "-o", label=name,color='blue')
     plt.plot((list(q)[0], list(q)[-1]), (list(D_q)[0], list(D_q)[-1]),color='red')
     plt.xlabel(r'$q$')
     plt.ylabel(r'$D(q)$')
 #    plt.legend(['data', 'linear', 'cubic'], loc='best')
-#     plt.savefig('C:/Users/xia/Desktop/2006_2010/201007/' + "Dq2010070832322" + name + ".png", dpi=300)
+    plt.savefig('C:/Users/xia/Desktop/æ–°å®éªŒ/201003/' + "Dq201003303232" + name + ".png", dpi=300)
     # plt.close(2)
 
 
-"»æÖÆÀÛ»ıÇúÏßÍ¼"
+"ç»˜åˆ¶ç´¯ç§¯æ›²çº¿å›¾"
 
 
 def plotSpectrum(a, f, name=""):
     plt.figure(3)
-    # plt.axis([0.25,0.3,3,2])
-    plt.plot(a, f, '-o', label=name,color='black')
+    plt.plot(a, f, '-o', label=name,color='blue')
     plt.xlabel(r'${\alpha}$')
     plt.ylabel(r"$f(\alpha)$")
-    #plt.title("¶àÖØ·ÖĞÎÆ×")
+    #plt.title("å¤šé‡åˆ†å½¢è°±")
     plt.legend()
     # plt.savefig('C:/Users/xia/Desktop/20060101vs20060622vs20061025/TRMM3b43200606/'+"Spectrum20060625256"+name+".png",dpi=300)
-    # plt.savefig('C:/Users/xia/Desktop/2006_2010/201007/' + "Spectrum2010070832322" + name + ".png", dpi=300)##Õâ¸ö
+    plt.savefig('C:/Users/xia/Desktop/æ–°å®éªŒ/201003/' + "Spectrum201003303232" + name + ".png", dpi=300)
     # plt.close(3)
 
 
-"ÀûÓÃtaoqºÍqÇóbetaºÍsigma"
+"åˆ©ç”¨taoqå’Œqæ±‚betaå’Œsigma"
 
 
 #def lognormalBetaFit(q, taoq):
@@ -187,40 +236,39 @@ def plotSpectrum(a, f, name=""):
 def lognormalBetaFit(q, taoq):
     d = 2
     b = 2
-    # normal_sigma2 = 2.60649  #20090105pdfN
-        # 2.86059  #20090105
-    # 2.77499
-
+    #gamma_alpha = 2
+    #gamma_beta = 2
+    #normal_sigma2 = 0.05
     d1_taoq = (taoq[1:] - taoq[0:-1]) / (q[1:] - q[0:-1])
     print("taoq[1:]:", taoq[1:], "taoq[0:-1]:", taoq[0:-1], "q[1:]:", q[1:], "q[0:-1]:", q[0:-1])
     d2_taoq = (d1_taoq[1:] - d1_taoq[0:-1]) / (q[1:-1] - q[0:-2])
-    print("d1_taoq[1:]:",d1_taoq[1:],"d1_taoq[0:-1]:",d1_taoq[0:-1],"q[1:-1]:",q[1:-1],"q[0:-2]:",q[0:-2])
-    print(d2_taoq)
+    # print("d1_taoq[1:]:",d1_taoq[1:],"d1_taoq[0:-1]:",d1_taoq[0:-1],"q[1:-1]:",q[1:-1],"q[0:-2]:",q[0:-2])
+    # print(d2_taoq)
     for i in range(0, len(d2_taoq)):
         if (q[i + 1] >= 1):
             print("i:", i, "q[i+1]:", q[i + 1], "q[i]:", q[i])
-            #gamma·Ö²¼
+            #gammaåˆ†å¸ƒ
             #sigma2 = (d2_taoq[i] * q[i+1]**2 * gamma_beta) / (d2_taoq[i] * q[i+1]**2 * np.log(b) - d*gamma_alpha)
             #print('sigma2:',sigma2)
             #beta = 1 + d1_taoq[i] / d - gamma_alpha * math.log((1 - sigma2 * math.log(b)),2) / gamma_beta - (sigma2 * gamma_alpha)/(q[i+1]*gamma_beta - q[i+1]*sigma2*math.log(b))
-            # ±ê×¼ÕıÌ¬·Ö²¼
+            #æ ‡å‡†æ­£æ€åˆ†å¸ƒ
             sigma2 = d2_taoq[i] / (d * np.log(b))
+            #print('sigma2:', sigma2)
             beta=1+d1_taoq[i]/d+sigma2*(np.log(b)/2)*(2*q[i+1]-1)
-            # print('sigma2:', sigma2)
-            #ÕıÌ¬·Ö²¼
-            # sigma2 = d2_taoq[i] / (d * normal_sigma2 * np.log(b))
-            # beta = 1 + d1_taoq[i]/d + d2_taoq[i] / 2*d - d2_taoq[i]*q[i+1] / d
-            # print("d1_taoq[i]:", d1_taoq[i])
+            #æ­£æ€åˆ†å¸ƒ
+            #sigma2 = d2_taoq[i] / (d * normal_sigma2 * np.log(b))
+            #beta = 1 + d1_taoq[i]/d + d2_taoq[i] / 2*d - d2_taoq[i]*q[i+1] / d
+            print("d1_taoq[i]:", d1_taoq[i])
             break
     # beta=0
     print("beta:", beta, "sigma^2:", sigma2)
     return beta, sigma2
 
-"ÀûÓÃbetaºÍsigmaÇóÈ¨ÖØW£¬²¢·ÖÅä¸ø¸÷Íø¸ñ,½«0.25¡ãµÄ½µË®³¡½µ³ß¶Èµ½0.01¡ã"
+"åˆ©ç”¨betaå’Œsigmaæ±‚æƒé‡Wï¼Œå¹¶åˆ†é…ç»™å„ç½‘æ ¼,å°†0.25Â°çš„é™æ°´åœºé™å°ºåº¦åˆ°0.01Â°"
 
 
 #def mfDownscaleField(field, beta, sigma2):
-#    # n=4#8*8µÄ
+#    # n=4#8*8çš„
 #    n = 6  # 32*32
 #    b = 2
 #    fieldMatrix = np.array([])
@@ -259,40 +307,32 @@ def lognormalBetaFit(q, taoq):
 #    return (fieldMatrix)
 
 def mfDownscaleField(field, beta, sigma2):
-    # n=4#8*8µÄ
+    # n=4#8*8çš„
     n = 6  # 32*32
     b = 2
 
-    normal_sigma2 =1
-        # 2.60649  #20090105pdfN
-        # 2.86059 #20090105
-        # 2.77499  #20100708trmmpdf
-        # 2.81112  #20100708pdf
-
-    normal_sigma = np.sqrt(normal_sigma2)
-    normal_mu = 0
-        # 0.23314  #20090105pdfN
-        # 0.130297  #20090105
-        # 2.57828  #20100708trmmpdf
-        # 2.80668  #20100708
-
+    #gamma_alpha = 2
+    #gamma_beta = 2
+    #normal_sigma2 = 0.05
+    #normal_sigma = np.sqrt(normal_sigma2)
+    #normal_mu = 0
     fieldMatrix = np.array([])
     cascade = []
     for i in range(0, n + 1):
         cascade.append(np.empty((b ** i, b ** i), np.double))
 
-    #±ê×¼ÕıÌ¬·Ö²¼
+    #æ ‡å‡†æ­£æ€åˆ†å¸ƒ
     temp2 = np.sqrt(sigma2)
     temp1 = beta - sigma2 * np.log(2) / 2
 
-    #gamma·Ö²¼
+    #gammaåˆ†å¸ƒ
     #temp1 = beta + gamma_alpha * math.log((1-sigma2*math.log(b)),2) / gamma_beta
     #temp2 = sigma2
     #print('temp2,temp1:',temp2,temp1)
 
-    #ÕıÌ¬·Ö²¼
-    # temp2 = np.sqrt(sigma2)
-    # temp1 = beta - temp2*normal_mu - normal_sigma2*sigma2*np.log(b) / 2
+    #æ­£æ€åˆ†å¸ƒ
+    #temp2 = np.sqrt(sigma2)
+    #temp1 = beta - temp2*normal_mu - normal_sigma2*sigma2*np.log(b) / 2
 
     simfield = np.empty((32, 32))
     for i in range(field.shape[0]):
@@ -301,10 +341,10 @@ def mfDownscaleField(field, beta, sigma2):
             for x in range(1, n + 1):
                 for y in range(0, b ** (x - 1)):
                     for z in range(0, b ** (x - 1)):
-                        cascade[x][y * 2][z * 2] = cascade[x - 1][y][z] * b ** (temp1 + temp2 * random.gauss(normal_mu,normal_sigma))
-                        cascade[x][y * 2][z * 2 + 1] = cascade[x - 1][y][z] * b ** (temp1 + temp2 * random.gauss(normal_mu,normal_sigma))
-                        cascade[x][y * 2 + 1][z * 2] = cascade[x - 1][y][z] * b ** (temp1 + temp2 * random.gauss(normal_mu,normal_sigma))
-                        cascade[x][y * 2 + 1][z * 2 + 1] = cascade[x - 1][y][z] * b ** (temp1 + temp2 * random.gauss(normal_mu,normal_sigma))
+                        cascade[x][y * 2][z * 2] = cascade[x - 1][y][z] * b ** (temp1 + temp2 * random.gauss(0,0.05))
+                        cascade[x][y * 2][z * 2 + 1] = cascade[x - 1][y][z] * b ** (temp1 + temp2 * random.gauss(0,0.05))
+                        cascade[x][y * 2 + 1][z * 2] = cascade[x - 1][y][z] * b ** (temp1 + temp2 * random.gauss(0,0.05))
+                        cascade[x][y * 2 + 1][z * 2 + 1] = cascade[x - 1][y][z] * b ** (temp1 + temp2 * random.gauss(0,0.05))
                         #cascade[x][y * 2][z * 2] = cascade[x - 1][y][z] * b **(temp1 + temp2 * random.lognormvariate(0.102470841488,0.897529158512))
                         #cascade[x][y * 2][z * 2 + 1] = cascade[x - 1][y][z] * b **(temp1 + temp2 * random.lognormvariate(0.102470841488,0.897529158512))
                         #cascade[x][y * 2 + 1][z * 2] = cascade[x - 1][y][z] * b ** (temp1 + temp2 * random.lognormvariate(0.102470841488,0.897529158512))
@@ -322,165 +362,43 @@ def mfDownscaleField(field, beta, sigma2):
     # np.savetxt('C:/Users/xia/Desktop/20060101vs20060622vs20061025/0607_1007/'+str(2006072010073030)+'_'+str(2)+'.'+"txt",fieldMatrix,fmt = '%.8f')
     return (fieldMatrix)
 
-#"µ¼ÈëÊı¾İ"
-def dataImport(tag):
 
-    #"¶ÁÈëÊı¾İ"
-    rawIMERG = np.loadtxt('C:/Users/xia/Desktop/2006_2010/200901/20090105_trmm_3232.txt')
-    assert len(rawIMERG)!=srows*scols,"Êı¾İ·¶Î§²»ÕıÈ·£¡"
-    IMERG= np.array(rawIMERG).reshape(srows,scols)
-    for i in range(0, srows):
-        for j in range(0, scols):
-            if (IMERG[i,j]<0):
-                IMERG[i, j]=0
-            else:
-                IMERG[i, j]=IMERG[i,j]
-                
-    rawAveIMERG = np.loadtxt('C:/User/200601_201001_LTDM_DEM_NDVIMin_025.txt')
-    assert len(rawAveIMERG) != srows * scols, "Êı¾İ·¶Î§²»ÕıÈ·£¡"
-    AveIMERG= np.array(rawAveIMERG).reshape(srows,scols)
-    
-    #"ÔÈÖÊ»¯"
-    detrendData= np.empty((srows,scols),np.double)
-    for i in range(0, srows):
-        for j in range(0, scols):
-            if (AveIMERG[1][i, j] > 0):
-                detrendData[i, j] = IMERG[i, j] / AveIMERG[i, j]
-            else:
-                detrendData[i, j] = 0
-    # "»Ö¸´ÒìÖÊĞÔÑ¡ÓÃºÎÖÖÊı¾İ"
-    if tag=='MFn-GWR':
-        rawGWR = np.loadtxt( 'C:/Users/hb/G_200601_201001_dem_slope_ltd_ltn_32.txt')
-        assert len(rawGWR) != erows * ecols, "Êı¾İ·¶Î§²»ÕıÈ·£¡"
-        GWR = np.array(rawGWR).reshape(erows,ecols)
-        for i in range(0, erows):
-            for j in range(0, ecols):
-                if (GWR[i, j] < 0):
-                    GWR[i, j] = 0
-                else:
-                    GWR[i, j] = GWR[i, j]
-        return detrendData,GWR
-    else:
-        return detrendData,AveIMERG
-
-#"Í¨¹ı¼ÆËãÍ³¼Æ¾Ø£¬ÏòÉÏ½øĞĞ¶àÖØ·ÖÎöÌØÕ÷·ÖÎö£¬ÖÆ×÷Í¼±í£¬ÇóµÃbetaºÍsigma"
-def mutifractalAnalysis(rawfield, branch=2):
-
-    #"¹éÒ»»¯"
-    field = normalize(rawfield)
-    # field=rawfield
-    fieldSize = field.shape[0]
-    layers = np.arange(0, int(math.log(fieldSize, branch)))
-    scales = branch ** layers
-    print("layers:", layers, "scales:", scales)
-    q = np.linspace(-5, 5, 11)
-    moment = np.zeros((len(layers), len(q)))
-
-    "Çómoment"
-    for i in range(0, len(layers)):
-        for j in range(0, len(q)):
-            distrib = coarseGrain(field, [x // scales[i] for x in field.shape])
-            positiveDist = distrib[distrib > 0]
-            # sum_positiveDist=np.sum(positiveDist)
-            moment[i, j] = np.sum(positiveDist ** q[j])
-            # print("distrib",distrib,"q[j]",q[j],"moment[i,j]",moment[i,j])
-
-    "Çótao(q),tao(q)¾ÍÊÇĞ±ÂÊ"
-    k1 = np.zeros(moment.shape[1])  # ´æ·ÅĞ±ÂÊ
-    b1 = np.zeros(moment.shape[1])  # ´æ·Å½Ø¾à
-    R1_Squared = np.zeros(moment.shape[1])  # ´æ·ÅR2
-    # k2=np.zeros(positiveDist[1])
-    # b2=np.zeros(positiveDist[1])
-    # R2_Squared=np.zeros(moment.shape[1])
-    lambd = scales
-    X = np.log(lambd) / np.log(2)  # logÒÔ2Îªµ×µÄlambda,ÏßĞÔ×îĞ¡¶ş³ËµÄXÊäÈë
-    X = sm.add_constant(X.T)  # ¼ÓÉÏ½Ø¾àÏî
-    # for i in range(0,positiveDist.shape[1]):
-    #        Y2=np.log(positiveDist[:,i])/np.log(2)
-    #        results2=sm.OLS(Y2,X).fit()
-    #        k2[i]=results2.params[1]
-    #        b2[i]=results2.params[0]
-    #        R2_Squared[i]=results2.rsquared
-    #        print("k2",k2[i],"b2",b2[i],"r22",R2_Squared[i])
-    for i in range(0, moment.shape[1]):
-        Y1 = np.log(moment[:, i]) / np.log(2)  # logÒÔ2Îªµ×µÄmoment£¬ÏßĞÔ×îĞ¡¶ş³ËµÄXÊäÈë
-        results1 = sm.OLS(Y1, X).fit()  # logÒÔ2Îªµ×µÄmomentºÍlambdaµÄÏßĞÔÄâºÏ
-        k1[i] = results1.params[1]  # Ğ±ÂÊ
-        b1[i] = results1.params[0]  # ½Ø¾à
-        R1_Squared[i] = results1.rsquared
-        print("k1", k1[i], "b1", b1[i], "r21", R1_Squared[i])
-
-    plotMoment_lambd(scales, q, k1, b1, moment, R1_Squared)
-    plotD_q(k1, q)
-    return (scales, q, k1, b1, moment, R1_Squared)
 def main():
-
-    global res,ratio,srows,scols,erows,ecols
-    res= 0.1
-    ratio = 4
-    srows = 96
-    scols = 96
-    erows=srows*ratio
-    ecols=scols*ratio
-
-    tag='MF'#'MFn' 'MFn-GWR'
-    rainfall,toRetrend=dataImport(tag)
-    print (rainfall,toRetrend)
-    #beta,sigma=mutifractalAnalysis(rainfall)
-
-main()
-
-
-
-def main2():
-    Field = {}
-    #Field_1D={}
-    Sum_Field = 0.0
-    Ave_Field = 0.0
-#    Field[10] = np.loadtxt(
-#        'C:/Users/xia/Desktop/ĞÂÊµÑé/2007/200702100_gamma_no_zero_hb_n/2007023232_mf10.txt')
-#    Field_1D[10] = np.array(Field[10]).reshape(1048576, 1)
-    for count in range(1, 21):
-        Field[count] = np.loadtxt( 'C:/Users/xia/Desktop/2006_2010/200901/pdf_downscaling/20090105us/' + str(200901053232)+'_pdf_gaussUSigmag_Gmf'+str(count)+ '.' + "txt")
-        #Field_1D[count] = np.array(Field[count]).reshape(1048576, 1)
-        Sum_Field += Field[count]
-        Ave_Field = Sum_Field / 20
-    np.savetxt('C:/Users/xia/Desktop/2006_2010/200901/pdf_downscaling/20090105us/' + str(200901053232) + '_pdf_gaussUSigmag_Gmf_20Ave'+ '.txt',Ave_Field, fmt='%.8f')
-#main2()
-
-def main3():
     res = 0.25
-    "Êı¾İ´¦Àí"
-    trmm3b43_hb_ID = {}
-    trmm3b43_hb_ID = np.loadtxt('C:/Users/xia/Desktop/2006_2010/200901/20070228_trmm_3232.txt')
-    #trmm3b43_3232 = {}
-    #trmm3b43_3232=np.zeros((1024,1),np.double)
-    #for i in range(0,len(trmm3b43_hb_ID)):
-    #    trmm3b43_3232[int(trmm3b43_hb_ID[i][0])]=trmm3b43_hb_ID[i][1]
-
+    "æ•°æ®å¤„ç†"
+    trmm3b43_1D = {}
+    trmm3b43_1D = np.loadtxt('C:/Users/xia/Desktop/æ–°å®éªŒ/201003/20100330_trmm_3232.txt')
     trmm3b43 = {}
-
-    trmm3b43[1998] = np.array(trmm3b43_hb_ID).reshape(32, 32)
+    trmm3b43[1998] = np.array(trmm3b43_1D).reshape(32, 32)
+    for i in range(0, 32):
+        for j in range(0, 32):
+            if (trmm3b43[1998][i,j]<0):
+                trmm3b43[1998][i, j]=0
+            else:
+                trmm3b43[1998][i, j]=trmm3b43[1998][i,j]
 
     trmm3b43NormAver_1D = {}
     trmm3b43NormAver_1D = np.loadtxt(
-        'C:/Users/xia/Desktop/ĞÂÊµÑé/200602_201002_Avg/200602_201002_LTNA_DEM_NDVIMax_025.txt')
+        'C:/Users/xia/Desktop/æ–°å®éªŒ/200603_201003_Ave/200603_201003_LTNM_DEM_NDVIAVG_025.txt')
     trmm3b43NormAver = {}
     trmm3b43NormAver[1] = np.array(trmm3b43NormAver_1D).reshape(32, 32)
+
     GWR_1D = {}
     GWR_1D = np.loadtxt(
-        'C:/Users/xia/Desktop/ĞÂÊµÑé/200602_201002_Avg/GWR/GWR_LTNA_DEM_NDVIMax/200602_201002_LTNA_DEM_NDVIMax_00078125_Z.txt')
+        'C:/Users/xia/Desktop/æ–°å®éªŒ/200603_201003_Ave/GWR/LTNM_DEM_NDVIAVG/200603_201003_LTNM_DEM_NDVIAvg_00078125_Z.txt')
+    #GWR_1D = np.loadtxt('C:/Users/xia/Desktop/æ–°å®éªŒ/2007/200702/200702_G_LTNA_NDVI_DEM.txt')
     GWR = {}
     GWR[1] = np.array(GWR_1D).reshape(1024, 1024)
     for i in range(0, 1024):
         for j in range(0, 1024):
-            if (GWR[1][i, j] < 0):
-                GWR[1][i, j] = 0
+            if (GWR[1][i,j]<0):
+                GWR[1][i, j]=0
             else:
-                GWR[1][i, j] = GWR[1][i, j]
+                GWR[1][i, j]=GWR[1][i,j]
 
+    "åŒ€è´¨åŒ–"
     trmm3b43Detrend = {}
-    trmm3b43Detrend[199801] = np.empty((32, 32), np.double)
+    trmm3b43Detrend[199801] = np.empty((32, 32),np.double)
     for i in range(0, 32):
         for j in range(0, 32):
             if (trmm3b43NormAver[1][i, j] > 0):
@@ -488,55 +406,64 @@ def main3():
             else:
                 trmm3b43Detrend[199801][i, j] = 0
 
-    "¶àÖØ·ÖĞÎ¹ı³Ì"
+    "å¤šé‡åˆ†å½¢è¿‡ç¨‹"
     print("trmm3b43Detrend:", trmm3b43Detrend[199801])
     combinedField_1D = {}
-    combinedField = np.empty((32 * 32, 32 * 32), np.double)
-    a, f = legendre(trmm3b43Detrend[199801])
+    combinedField = np.empty((32 * 32, 32 * 32),np.double)
+    "è®¡ç®—å¥‡å¼‚å€¼Î±å’Œå¤šé‡åˆ†å½¢è°±fï¼ˆÎ±ï¼‰ï¼Œå®é™…è¿˜æ˜¯ç”¨ç»Ÿè®¡çŸ©è®¡ç®—å¹¿ä¹‰åˆ†å‹ç»´åº¦ï¼Œå†ä»¥å‹’è®©å¾·å˜åŒ–å¾—å‡ºçš„ï¼Œç¡®è®¤å…·æœ‰åˆ†å½¢ç‰¹å¾"
+    a, f = legendre(trmm3b43Detrend[199801])        ##########################################################################################
     # a,f=legendre(trmm3b43[1998])
     # scales,q,k,b,moment,R_Squared=mutifractalAnalysis(trmm3b43[1998])
+    "ä»32*32åˆ°1*1ï¼Œç”¨å¾€ä¸Šèšåˆçš„æ–¹æ³•ï¼Œä»¥å¹¿ä¹‰åˆ†å‹ç»´åº¦æ³•D(q)ï¼Œç¡®è®¤å…·æœ‰åˆ†å½¢ç‰¹å¾"
     scales, q, k, b, moment, R_Squared = mutifractalAnalysis(trmm3b43Detrend[199801])
+    "å‰é¢éƒ½åªæ˜¯ç¡®è®¤å…·æœ‰åˆ†å½¢ç‰¹å¾ï¼Œæ‰€ä»¥ä»32*32èšåˆè®¡ç®—åˆ°1*1ï¼Œ"
+    "qå–-5åˆ°5æ˜¯ä¸ºäº†ç¡®è®¤å…·æœ‰å¤šé‡åˆ†å½¢ç‰¹å¾ï¼Œå³å‡½æ•°ä¸ºå•è°ƒå‡¸å‡½æ•°"
 
+    "è®¡ç®—taoqä¸qï¼Œå¾—åˆ°æƒé‡Î²å’ŒÏƒ"
     taoq = -k
     beta, sigma2 = lognormalBetaFit(q, taoq)
     print("taoq:", taoq, "q:", q)
-
-    detrendField = mfDownscaleField(trmm3b43Detrend[199801], beta, sigma2)
+    "å¤šå±‚çº§è”è®¡ç®—é™æ°´å€¼ã€‚å®é™…ä¸Šçº§è”çš„æ—¶å€™ï¼Œåªå–q=1æ—¶çš„Î²å’ŒÏƒ"
+    detrendField = mfDownscaleField(trmm3b43Detrend[199801], beta, sigma2) ##100æ¬¡çš„æ—¶å€™è¦éšæ‰
 
     # detrendField=mfDownscaleField(trmm3b43[1998],beta,sigma2)
-    "Ñ­»·100´Î"
-    #        for count in range(1,101):
-    #                detrendField=mfDownscaleField(trmm3b43Detrend[199801],beta,sigma2)
-    #                for i in range(0,32):
-    #                        for j in range(0,32):
-    #                                temp1=trmm3b43NormAver[1][i,j]*detrendField[i*30:(i+1)*30,j*30:(j+1)*30]
-    #                                temp2=temp1/np.sum(temp1)*30**2
-    #                                combinedField[i*30:(i+1)*30,j*30:(j+1)*30]=temp2*trmm3b43[1998][i,j]
-    #                combinedField_1D=np.array(combinedField).reshape(921600,1)
-    #                np.savetxt('C:/Users/xia/Desktop/ĞÂÊµÑé/201007/'+str(2010073030)+'_Fmf_1D'+'.'+"txt",combinedField_1D,fmt = '%.8f')
-    #                #np.savetxt('C:/Users/xia/Desktop/20060101vs20060622vs20061025/201007/100/'+str(2010073030)+'_'+str(count)+'.'+"txt",combinedField,fmt = '%.8f')
+    "å¾ªç¯100æ¬¡ï¼Œæ¯æ¬¡å¾—åˆ°çš„ç»“æœå•ç‹¬è¾“å‡ºï¼Œæœ€ååœ¨main2é‡Œé¢æ‰¹é‡ç´¯åŠ æ±‚å¹³å‡"
+#    for count in range(1,50):
+#        detrendField = mfDownscaleField(trmm3b43Detrend[199801], beta, sigma2)
+#        for i in range(0, 32):
+#            for j in range(0, 32):
+#                #temp1 = trmm3b43NormAver[1][i, j] * detrendField[i * 32:(i + 1) * 32, j * 32:(j + 1) * 32]
+#                temp1 = GWR[1][i * 32:(i + 1) * 32, j * 32:(j + 1) * 32] * detrendField[i * 32:(i + 1) * 32,j * 32:(j + 1) * 32]
+#                if (np.sum(temp1) != 0):
+#                    temp2 = temp1 / np.sum(temp1)
+#                else:
+#                    temp2 = 0
+#                # combinedField[i*25:(i+1)*25,j*25:(j+1)*25]=temp1*trmm3b43[1998][i,j]
+#                combinedField[i * 32:(i + 1) * 32, j * 32:(j + 1) * 32] = temp2 * trmm3b43[1998][i, j] * (32 ** 2)
+#        combinedField_1D = np.array(combinedField).reshape(1048576, 1)
+#        np.savetxt('C:/Users/xia/Desktop/æ–°å®éªŒ/201003/20100330_gauss_no_zero_Gmf/'+str(201003303232)+ '_gauss_no_zero_Gmf'+str(count)+'.'+"txt",combinedField_1D,fmt = '%.8f')
 
 
-    "Ã»ÓĞÓÃtrmm3b43Detrend[199801]"
-
+    "æ²¡æœ‰ç”¨trmm3b43Detrend[199801]"
+##æ¢å¤å¼‚è´¨æ€§
     for i in range(0, 32):
         for j in range(0, 32):
-            temp1 = detrendField[i * 32:(i + 1) * 32, j * 32:(j + 1) * 32] * np.sum(trmm3b43Detrend[199801])
-            temp2 = trmm3b43NormAver[1][i, j] * temp1
-            #temp1 = detrendField[i * 32:(i + 1) * 32,j * 32:(j + 1) * 32] *  np.sum(trmm3b43Detrend[199801])
-            #temp2 = GWR[1][i * 32:(i + 1) * 32, j * 32:(j + 1) * 32] * temp1
-
-            if (np.sum(temp2) != 0):
-                temp3 = temp2 / np.sum(temp2)
+            temp1 = trmm3b43NormAver[1][i, j] * detrendField[i * 32:(i + 1) * 32, j * 32:(j + 1) * 32]
+            temp1=GWR[1][i*32:(i+1)*32,j*32:(j+1)*32]*detrendField[i*32:(i+1)*32,j*32:(j+1)*32]
+            if (np.sum(temp1) != 0):
+                temp2 = temp1 / np.sum(temp1)
             else:
-                temp3 = 0
+                temp2 = 0
             # combinedField[i*25:(i+1)*25,j*25:(j+1)*25]=temp1*trmm3b43[1998][i,j]
-            combinedField[i * 32:(i + 1) * 32, j * 32:(j + 1) * 32] = temp3 * (32 ** 2)
+            combinedField[i * 32:(i + 1) * 32, j * 32:(j + 1) * 32] = temp2 * trmm3b43[1998][i, j] * (32 ** 2)
     combinedField_1D = np.array(combinedField).reshape(1048576, 1)
-    np.savetxt('C:/Users/xia/Desktop/ĞÂÊµÑé/200702/' + str(200702283232) + '_gamma_no_zero_Nmf_new' + '.' + "txt",combinedField_1D,fmt='%.8f')
+    np.savetxt('C:/Users/xia/Desktop/æ–°å®éªŒ/201003/20100330_gauss_no_zero_Gmf/'+str(201003303232)+ '_gauss005_no_zero_Gmf'+ '.' + "txt", combinedField_1D, fmt='%.8f')
+
+main()
+
 def main1():
     trmm3b43 = {}
-    trmm3b43[1998] = np.loadtxt('C:/Users/xia/Desktop/2006_2010/200901/200901053232.txt')
+    trmm3b43[1998] = np.loadtxt('C:/Users/xia/Desktop/æ–°å®éªŒ/2006/200620_trmm_3232.txt')
 
     trmm3b43NormAver = {}
     trmm3b43NormAver[1] = np.loadtxt(
@@ -544,7 +471,7 @@ def main1():
 
     GWR = {}
     GWR[1] = np.loadtxt(
-        'C:/Users/xia/Desktop/ĞÂÊµÑé/200601_201001_Avg/GWR/LTDM_DEM_NDVIMin/200601_201001_LTDM_DEM_NDVIMin_00078125_Z.txt')
+        'C:/Users/xia/Desktop/æ–°å®éªŒ/200601_201001_Avg/GWR/LTDM_DEM_NDVIMin/200601_201001_LTDM_DEM_NDVIMin_00078125_Z.txt')
     detrendField = np.empty((32 * 32, 32 * 32))
     detrendGWR = np.empty((32 * 32, 32 * 32))
     combinedField = np.loadtxt('C:/Users/xia/Desktop/20060101vs20060622vs20061025/20080710/200807103030.txt')
@@ -566,4 +493,108 @@ def main1():
 
     np.savetxt('C:/Users/xia/Desktop/20060101vs20060622vs20061025/20080710/' + str(
         200807103030) + '_' + 'combine' + '.' + "txt", detrendGWR, fmt='%.8f')
+
+
+def main2():
+    Field = {}
+    #Field_1D={}
+    Sum_Field = 0.0
+    Ave_Field = 0.0
+#    Field[10] = np.loadtxt(
+#        'C:/Users/xia/Desktop/æ–°å®éªŒ/2007/200702100_gamma_no_zero_hb_n/2007023232_mf10.txt')
+#    Field_1D[10] = np.array(Field[10]).reshape(1048576, 1)
+    for count in range(1, 50):
+        Field[count] = np.loadtxt( 'C:/Users/xia/Desktop/æ–°å®éªŒ/201003/20100330_gauss_no_zero_Gmf/' + str(201003303232)+'_gauss_no_zero_Gmf'+str(count)+ '.' + "txt")
+        #Field_1D[count] = np.array(Field[count]).reshape(1048576, 1)
+        Sum_Field += Field[count]
+        Ave_Field = Sum_Field / 50
+    np.savetxt('C:/Users/xia/Desktop/æ–°å®éªŒ/201003/20100330_gauss_no_zero_Gmf/' + str(201003303232) + '_gauss_no_zero_Gmf_Ave'+ '.txt',Ave_Field, fmt='%.8f')
+
+#main2()
+def main3():
+    res = 0.25
+    "æ•°æ®å¤„ç†"
+    trmm3b43_hb_ID = {}
+    trmm3b43_hb_ID = np.loadtxt('C:/Users/xia/Desktop/æ–°å®éªŒ/200702/20070228_trmm_3232.txt')
+    #trmm3b43_3232 = {}
+    #trmm3b43_3232=np.zeros((1024,1),np.double)
+    #for i in range(0,len(trmm3b43_hb_ID)):
+    #    trmm3b43_3232[int(trmm3b43_hb_ID[i][0])]=trmm3b43_hb_ID[i][1]
+
+    trmm3b43 = {}
+
+    trmm3b43[1998] = np.array(trmm3b43_hb_ID).reshape(32, 32)
+
+    trmm3b43NormAver_1D = {}
+    trmm3b43NormAver_1D = np.loadtxt(
+        'C:/Users/xia/Desktop/æ–°å®éªŒ/200602_201002_Avg/200602_201002_LTNA_DEM_NDVIMax_025.txt')
+    trmm3b43NormAver = {}
+    trmm3b43NormAver[1] = np.array(trmm3b43NormAver_1D).reshape(32, 32)
+    GWR_1D = {}
+    GWR_1D = np.loadtxt(
+        'C:/Users/xia/Desktop/æ–°å®éªŒ/200602_201002_Avg/GWR/GWR_LTNA_DEM_NDVIMax/200602_201002_LTNA_DEM_NDVIMax_00078125_Z.txt')
+    GWR = {}
+    GWR[1] = np.array(GWR_1D).reshape(1024, 1024)
+    for i in range(0, 1024):
+        for j in range(0, 1024):
+            if (GWR[1][i, j] < 0):
+                GWR[1][i, j] = 0
+            else:
+                GWR[1][i, j] = GWR[1][i, j]
+
+    trmm3b43Detrend = {}
+    trmm3b43Detrend[199801] = np.empty((32, 32), np.double)
+    for i in range(0, 32):
+        for j in range(0, 32):
+            if (trmm3b43NormAver[1][i, j] > 0):
+                trmm3b43Detrend[199801][i, j] = trmm3b43[1998][i, j] / trmm3b43NormAver[1][i, j]
+            else:
+                trmm3b43Detrend[199801][i, j] = 0
+
+    "å¤šé‡åˆ†å½¢è¿‡ç¨‹"
+    print("trmm3b43Detrend:", trmm3b43Detrend[199801])
+    combinedField_1D = {}
+    combinedField = np.empty((32 * 32, 32 * 32), np.double)
+    a, f = legendre(trmm3b43Detrend[199801])
+    # a,f=legendre(trmm3b43[1998])
+    # scales,q,k,b,moment,R_Squared=mutifractalAnalysis(trmm3b43[1998])
+    scales, q, k, b, moment, R_Squared = mutifractalAnalysis(trmm3b43Detrend[199801])
+
+    taoq = -k
+    beta, sigma2 = lognormalBetaFit(q, taoq)
+    print("taoq:", taoq, "q:", q)
+
+    detrendField = mfDownscaleField(trmm3b43Detrend[199801], beta, sigma2)
+
+    # detrendField=mfDownscaleField(trmm3b43[1998],beta,sigma2)
+    "å¾ªç¯100æ¬¡"
+    #        for count in range(1,101):
+    #                detrendField=mfDownscaleField(trmm3b43Detrend[199801],beta,sigma2)
+    #                for i in range(0,32):
+    #                        for j in range(0,32):
+    #                                temp1=trmm3b43NormAver[1][i,j]*detrendField[i*30:(i+1)*30,j*30:(j+1)*30]
+    #                                temp2=temp1/np.sum(temp1)*30**2
+    #                                combinedField[i*30:(i+1)*30,j*30:(j+1)*30]=temp2*trmm3b43[1998][i,j]
+    #                combinedField_1D=np.array(combinedField).reshape(921600,1)
+    #                np.savetxt('C:/Users/xia/Desktop/æ–°å®éªŒ/201007/'+str(2010073030)+'_Fmf_1D'+'.'+"txt",combinedField_1D,fmt = '%.8f')
+    #                #np.savetxt('C:/Users/xia/Desktop/20060101vs20060622vs20061025/201007/100/'+str(2010073030)+'_'+str(count)+'.'+"txt",combinedField,fmt = '%.8f')
+
+
+    "æ²¡æœ‰ç”¨trmm3b43Detrend[199801]"
+
+    for i in range(0, 32):
+        for j in range(0, 32):
+            temp1 = detrendField[i * 32:(i + 1) * 32, j * 32:(j + 1) * 32] * np.sum(trmm3b43Detrend[199801])
+            temp2 = trmm3b43NormAver[1][i, j] * temp1
+            #temp1 = detrendField[i * 32:(i + 1) * 32,j * 32:(j + 1) * 32] *  np.sum(trmm3b43Detrend[199801])
+            #temp2 = GWR[1][i * 32:(i + 1) * 32, j * 32:(j + 1) * 32] * temp1
+
+            if (np.sum(temp2) != 0):
+                temp3 = temp2 / np.sum(temp2)
+            else:
+                temp3 = 0
+            # combinedField[i*25:(i+1)*25,j*25:(j+1)*25]=temp1*trmm3b43[1998][i,j]
+            combinedField[i * 32:(i + 1) * 32, j * 32:(j + 1) * 32] = temp3 * (32 ** 2)
+    combinedField_1D = np.array(combinedField).reshape(1048576, 1)
+    np.savetxt('C:/Users/xia/Desktop/æ–°å®éªŒ/200702/' + str(200702283232) + '_gamma_no_zero_Nmf_new' + '.' + "txt",combinedField_1D,fmt='%.8f')
 
