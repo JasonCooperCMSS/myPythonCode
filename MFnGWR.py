@@ -10,8 +10,8 @@ import time
 # "像元聚合,粗粒化：coarseGraining"
 def coarseGraining(field, coarseShape):
     # "计算聚合时的窗口大小"
-    rowRatio = sympy.S(field.shape[0]) / coarseShape[0]
-    colRatio = sympy.S(field.shape[1]) / coarseShape[1]
+    rowRatio = sympy.S(field.shape[0]) / coarseShape[0]# "保持用分数形式相加，边界不出问题"
+    colRatio = sympy.S(field.shape[1]) / coarseShape[1]# "保持用分数形式相加，边界不出问题"
     # print rowRatio
     # "循环计算当前层级每个格网的取值"
     # "针对非整数倍的粗粒化（类似插值但不是），按占原整格面积的比例进行累加。"
@@ -63,7 +63,7 @@ def coarseGraining(field, coarseShape):
 
 # "证明具有幂律特征"
 # "作图log2统计矩与log2分型尺度"
-def plotMoment_lambda(scales, q, k, b, moment, rsquared,name=""):
+def plotMoment_lambda(scales, q, k, b, moment, rsquared,path,name=""):
     plt.figure(1)
     lambd = scales
     x = np.log(lambd) / np.log(2)
@@ -77,58 +77,62 @@ def plotMoment_lambda(scales, q, k, b, moment, rsquared,name=""):
     #plt.ylim(-60, 100)
     plt.xlabel(r'$Log_2[\lambda]$')
     plt.ylabel(r'$Log_2[M(\lambda,q)]$')
-    plt.savefig('F:/Test/OUT/' + "MomentScale" +name+ ".png", dpi=300)
+    plt.savefig(path + "Moment_Lambda" +name+ ".png", dpi=300)
     plt.close(1)
 
 #"证明具有多重分形特征"
 #"用广义分形维数D(q)表示"
-def plotD_q(q, D_q,name=""):
+def plotD_q(q, D_q,path,name=""):
     plt.figure(2)
     plt.plot(q, D_q, "-o", label=name,color='blue')
     plt.plot((list(q)[0], list(q)[-1]), (list(D_q)[0], list(D_q)[-1]),color='red')
     plt.xlabel(r'$q$')
     plt.ylabel(r'$D(q)$')
     #plt.legend(['data', 'linear', 'cubic'], loc='best')
-    plt.savefig('F:/Test/OUT/' + "D_q" + name+ ".png", dpi=300)
+    plt.savefig(path + "D_q" + name+ ".png", dpi=300)
     plt.close(2)
 
 #"证明具有多重分形特征"
 #"用多重分形谱f(α)表示"
-def plotAlpha_f(a, f, name=""):
+def plotf_Alpha(a, f,path,name=""):
     plt.figure(3)
     plt.plot(a, f, "-o", label=name,color='blue')
     plt.xlabel(r'${\alpha}$')
     plt.ylabel(r"$f(\alpha)$")
     #plt.title("多重分形谱")
     #plt.legend()
-    plt.savefig('F:/Test/OUT/' + "f_alpha" + name + ".png", dpi=300)
+    plt.savefig(path + "f_alpha" + name + ".png", dpi=300)
     plt.close(3)
 
-def plotqTaoq(q,taoq,name=""):
+def plotq_Taoq(q,taoq,path,name=""):
     plt.figure(4)
     plt.plot(q,taoq, "-o", label=name, color='blue')
     plt.plot((list(q)[0], list(q)[-1]), (list(taoq)[0], list(taoq)[-1]), color='red')
-    plt.savefig('F:/Test/OUT/' + "qTaoq" +name+ ".png", dpi=300)
+    plt.savefig(path + "q_Taoq" +name+ ".png", dpi=300)
     plt.close(4)
 
-def plotqAlpha(q,alpha,name=""):
+def plotq_Alpha(q,alpha,path,name=""):
     plt.figure(5)
     plt.plot(q,alpha, "-o", label=name, color='blue')
     plt.plot((list(q)[0], list(q)[-1]), (list(alpha)[0], list(alpha)[-1]), color='red')
-    plt.savefig('F:/Test/OUT/' + "qAlpha" +name+ ".png", dpi=300)
+    plt.savefig(path + "q_Alpha" +name+ ".png", dpi=300)
     plt.close(5)
 
 # 多重分形特征分析mutifractalAnalysis"
-def mutifractalAnalysis(option=0,dimension=2,branch=2):
-
+def mfAnalysis(option='MF',pic='N',dimension=2,branch=2):
     s = time.clock()
-    # "数据处理"
+
+    #"经常修改的参数"
     row=96
     col=96
+    path='F:/WORK1/MF/'
+    q = np.linspace(-10, 10, 21)    # "q取值范围"
+
+    # "数据处理"
     data = {}
-    data = np.loadtxt('F:/Test/MF2/IM9696.txt')  # IM201607
-    IMERG = {}  # 原始降水数据
-    IMERG = np.array(data).reshape(row,col)
+    data = np.loadtxt(path+'IM9696.txt')  #
+    assert len(data)==row*col,"分析阶段：待降尺度数据范围不正确！"
+    IMERG = np.array(data).reshape(row,col)# 原始降水数据
     for i in range(0, row):
         for j in range(0, col):
             if (IMERG[i, j] < 0):
@@ -137,29 +141,26 @@ def mutifractalAnalysis(option=0,dimension=2,branch=2):
                 IMERG[i, j] = IMERG[i, j]
     #    print IMERG
     data = {}
-    data = np.loadtxt('F:/Test/MF2/aveIM9696.txt')
-    AveIMERG = {}  # 用来匀质化的平均数据
-    AveIMERG = np.array(data).reshape(row, col)
+    data = np.loadtxt(path+'aveIM9696.txt')
+    assert len(data) == row * col, "分析阶段：多年平均数据范围不正确！"
+    AveIMERG = np.array(data).reshape(row, col)# 用来匀质化的平均数据
     for i in range(0, row):
         for j in range(0, col):
             if (AveIMERG[i, j] < 0):
                 AveIMERG[i, j] = 0
             else:
                 AveIMERG[i, j] = AveIMERG[i, j]
-
     # "匀质化"
-    DeIMERG = {}
-    DeIMERG = np.empty((row, col), np.double)
+    field = np.empty((row, col), np.double)
     for i in range(0, row):
         for j in range(0, col):
             if (AveIMERG[i, j] > 0):
-                DeIMERG[i, j] = IMERG[i, j] / AveIMERG[i, j]
+                field[i, j] = IMERG[i, j] / AveIMERG[i, j]
             else:
-                DeIMERG[i, j] = 0
-    #    print("DeIMERG:", DeIMERG)
+                field[i, j] = 0
+    #    print("field:", field)
 
-    field=DeIMERG
-    # "首先将消除趋势波动（Detrended Fluctuation）的降水场归一化"
+    # "归一化"
     sumField = np.sum(field)
     if (sumField > 0):
         field = field / sumField
@@ -170,27 +171,23 @@ def mutifractalAnalysis(option=0,dimension=2,branch=2):
     layers = np.arange(0, int(math.log(fieldSize, branch)))
     scales = branch ** layers
     #print("layers:", layers, "scales:", scales)
-    q = np.linspace(-10, 10, 21)
 
     # "求统计矩moment"
-    #"d1用来计算taoq的一阶导(求奇异值α和参数β")，d2用来计算taoq的二阶导（求参数σ）"
+    # "d1用来计算taoq的一阶导(求奇异值alpha和参数beta")，d2用来计算taoq的二阶导（求参数sigma）"
     # "d3用来计算D(q)"
-    # "同时这里计算出后面需要的β和σ"
-
     moment = np.zeros((len(layers), len(q)))
     d1= np.zeros((len(layers), len(q)))
     d2= np.zeros((len(layers), len(q)))
     d3= np.zeros((len(layers), len(q)))
     for i in range(0, len(layers)):
+        distrib = coarseGraining(field, field.shape // scales[i])  ##[x // scales[i] for x infield.shape]
+        positiveDist = distrib[distrib > 0]
         for j in range(0, len(q)):
-            # print field.shape // scales[i]
-            distrib = coarseGraining(field, field.shape // scales[i])  ##[x // scales[i] for x infield.shape]
-            positiveDist = distrib[distrib > 0]
-            moment[i, j] = np.sum(positiveDist ** q[j])
+            qmass = positiveDist ** q[j]
+            moment[i, j] = np.sum(qmass)
             # print"distrib",distrib
             # print "q[j]",q[j]
             # print "moment[i,j]",moment[i,j]
-            qmass = positiveDist ** q[j]
             d1[i, j]=np.sum(qmass * np.log(positiveDist))/ np.sum(qmass)
             d2[i, j]=np.sum(qmass * np.log(positiveDist)**2 )/ np.sum(qmass)-d1[i,j]**2
             if (q[j]!=1):
@@ -229,12 +226,13 @@ def mutifractalAnalysis(option=0,dimension=2,branch=2):
         line = np.polyfit(np.log(1.0 * scales), d3[:, j], 1)
         D_q[j] = line[0]
 
-    #"qTaoq与qAlpha"
-    plotqTaoq(q,taoq,"_"+option)
-    plotqAlpha(q,alpha,"_"+option)
-    plotMoment_lambda(scales, q, k, b, moment, R_Squared, "_"+option)
-    plotAlpha_f(alpha, f_alpha, "_"+option)
-    plotD_q(q, D_q, "_"+option)
+    #"制作多重分形特征图"
+    if pic=='Y':
+        plotq_Taoq(q,taoq,path+'/PIC/',"_"+option)
+        plotq_Alpha(q,alpha,path+'/PIC/',"_"+option)
+        plotMoment_lambda(scales, q, k, b, moment, R_Squared,path+'/PIC/', "_"+option)
+        plotf_Alpha(alpha, f_alpha,path+'/PIC/', "_"+option)
+        plotD_q(q, D_q,path+'/PIC/', "_"+option)
 
     # "求二阶导，继而计算β和σ，将q=1处作为返回值"
     # "由于级联降尺度的研究者，分形尺度仍然从1到5，强行把负号移到了taoq上，所以在Xu等的降尺度中，taoq已经变化，增加来自λ的负号"
@@ -253,7 +251,6 @@ def mutifractalAnalysis(option=0,dimension=2,branch=2):
     v=1
     for i in range(0, len(q)):
         if (q[i]>= 1):
-
             if (option=="MF"):
                 # "X是标准正态分布"
                 sigma =math.sqrt(temp[i]/(dimension*np.log(branch)))
@@ -268,7 +265,7 @@ def mutifractalAnalysis(option=0,dimension=2,branch=2):
                         d.append(data[j,0])
                 e = np.sum(np.log(d)/np.log(2)) / len(d)
                 v = np.sum((np.log(d)/np.log(2) - e) ** 2) / len(d)
-                #print("mu:", e, "sigma:", v)
+                #print("e:", e, "v:", v)
                 sigma =math.sqrt(temp[i]/(v*dimension*np.log(branch)))
                 beta = 1 + alpha[i] /dimension  - temp[i]  * (q[i] - 0.5)/ dimension
             break
@@ -278,21 +275,22 @@ def mutifractalAnalysis(option=0,dimension=2,branch=2):
     return (beta,sigma,e,v)
 
 # "由β和σ执行降尺度"
-def mfDownscaleField(option ,beta, sigma,e=0,v=1):
-
+def mfDownscaling(option ,beta, sigma,e=0,v=1):
     st = time.clock()
-    #"循环次数/级联层数/行数/列数/二分"
+
+    #"常需修改的参数。——循环次数/级联层数/行数/列数/路径/二分"
     m=20
     n = 4
     row=43
     col=79
+    path='F:/WORK1/MF/'
     b = 2
 
     # "数据处理"
-    data = {}
-    data = np.loadtxt('F:/Test/MF2/IM7943.txt')  # IM201607
-    IMERG = {}  # 原始降水数据
-    IMERG = np.array(data).reshape(row,col)
+    data={}
+    data = np.loadtxt(path+'IM7943.txt')  # IM201607
+    assert len(data) == row * col, "降尺度阶段：待降尺度数据范围不正确！"
+    IMERG = np.array(data).reshape(row,col)# 原始降水数据
     for i in range(0, row):
         for j in range(0, col):
             if (IMERG[i, j] < 0):
@@ -300,40 +298,38 @@ def mfDownscaleField(option ,beta, sigma,e=0,v=1):
             else:
                 IMERG[i, j] = IMERG[i, j]
     #    print IMERG
-    data = {}
-    data = np.loadtxt('F:/Test/MF2/aveIM7943.txt')
-    AveIMERG = {}  # 用来匀质化的平均数据
-    AveIMERG = np.array(data).reshape(row, col)
+    data={}
+    data = np.loadtxt(path+'aveIM7943.txt')
+    assert len(data) == row * col, "降尺度阶段：多年平均数据范围不正确！"
+    AveIMERG = np.array(data).reshape(row, col)# 用来匀质化的平均数据
     for i in range(0, row):
         for j in range(0, col):
             if (AveIMERG[i, j] < 0):
                 AveIMERG[i, j] = 0
             else:
                 AveIMERG[i, j] = AveIMERG[i, j]
-
-    data = {}
-    data = np.loadtxt('F:/Test/MF2/rGWR.txt')
-    cGWR = {}  # 用来匀质化的平均数据
-    cGWR = np.array(data).reshape(row*2**n, col*2**n)
-    for i in range(0, row*2**n):
-        for j in range(0, col*2**n):
-            if (cGWR[i, j] < 0):
-                cGWR[i, j] = 0
-            else:
-                cGWR[i, j] = cGWR[i, j]
+    if option=='MFn-GWR':
+        data = {}
+        data = np.loadtxt(path+'rGWR.txt')
+        assert len(data) == row *2**n* col*2**n, "降尺度阶段：地理加权回归数据范围不正确！"
+        cGWR = np.array(data).reshape(row*2**n, col*2**n)# 用来恢复异质性的地理加权回归降尺度结果
+        for i in range(0, row*2**n):
+            for j in range(0, col*2**n):
+                if (cGWR[i, j] < 0):
+                    cGWR[i, j] = 0
+                else:
+                    cGWR[i, j] = cGWR[i, j]
 
     # "匀质化"
-    DeIMERG = {}
-    DeIMERG = np.empty((row, col), np.double)
+    field = {}
+    field = np.empty((row, col), np.double)
     for i in range(0, row):
         for j in range(0, col):
             if (AveIMERG[i, j] > 0):
-                DeIMERG[i, j] = IMERG[i, j] / AveIMERG[i, j]
+                field[i, j] = IMERG[i, j] / AveIMERG[i, j]
             else:
-                DeIMERG[i, j] = 0
-    #    print("DeIMERG:", DeIMERG)
-
-    field = DeIMERG
+                field[i, j] = 0
+    #    print("field:", field)
 
     fieldAll=[]
     cascade = []
@@ -382,34 +378,40 @@ def mfDownscaleField(option ,beta, sigma,e=0,v=1):
     result=np.zeros((row*2**n,col*2**n),np.double)
     for i in range(0, row):
         for j in range(0, col):
-            # temp=AveIMERG[i,j]*fieldAve[i*2**n:(i+1)*2**n,j*2**n:(j+1)*2**n]
-            temp =cGWR[i*2**n:(i+1)*2**n,j*2**n:(j+1)*2**n]*fieldAve[i*2**n:(i+1)*2**n,j*2**n:(j+1)*2**n]
+            if option == 'MFn-GWR':
+                temp =cGWR[i*2**n:(i+1)*2**n,j*2**n:(j+1)*2**n]*fieldAve[i*2**n:(i+1)*2**n,j*2**n:(j+1)*2**n]
+            else:
+                temp=AveIMERG[i,j]*fieldAve[i*2**n:(i+1)*2**n,j*2**n:(j+1)*2**n]
             if (np.sum(temp) != 0):
                 temp = temp / np.sum(temp)
             else:
                 temp = 0
-            result[i*2**n:(i+1)*2**n,j*2**n:(j+1)*2**n] = temp * IMERG[i, j] * (2**n*2**n)
+            result[i * 2 ** n:(i + 1) * 2 ** n, j * 2 ** n:(j + 1) * 2 ** n] = temp * IMERG[i, j] * (
+                        2 ** n * 2 ** n)
     result = np.array(result).reshape(row*2**n*col*2**n, 1)
-    np.savetxt('F:/Test/OUT/' + "r" + option + ".txt", result, fmt='%.8f')
+    np.savetxt(path + "r" + option + ".txt", result, fmt='%.8f')
     print ("降尺度计算耗时=",time.clock() - st,"秒")
 
 # 主函数"
 def main():
 
+    option='MFn'   #'MF'   'MFn-GWR'    控制选择一种分形
+    pic='Y' #   'N' 控制是否制作特征图
+
     # "多重分形特征验证"
     # "输出5张图，并计算q=1处的β和σ，taoq相关的值统一加负号"
-    # beta, sigma,e,v = mutifractalAnalysis("MFn")
-    # beta  =0.0003221456447606301
-    # sigma =0.08498305263749407
-    # e=0
-    # v=1
+    # beta, sigma,e,v = mfAnalysis(option,pic)
+    beta  =0.0003221456447606301
+    sigma =0.08498305263749407
+    e=0
+    v=1
 
-    beta  =0.00018610559374459146
-    sigma =0.10707333803819653
-    e=6.9247792607123975
-    v=0.6299440380321286
+    # beta  =0.00018610559374459146
+    # sigma =0.10707333803819653
+    # e=6.9247792607123975
+    # v=0.6299440380321286
 
     # "实际降尺度并得到结果"
-    # mfDownscaleField("MFnGWRnew",beta, sigma,e,v)
+    # mfDownscaling("MFn-GWR",beta, sigma,e,v)
 
 main()
