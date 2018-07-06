@@ -16,11 +16,10 @@ from arcpy.sa import *
 env.workspace = "F:/Test/data/ASTERDEM/"
 path="F:/Test/data/ASTERDEM/DEMtif/"
 
-
-arcpy.MosaicToNewRaster_management("F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N33E111_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N33E110_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N33E109_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N32E113_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N32E112_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N32E111_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N32E110_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N32E109_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N31E116_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N31E115_dem.ti;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N31E114_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N31E113_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N31E112_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N31E111_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N31E110_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N31E109_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N30E116_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N30E115_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N30E114_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N30E113_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N30E112_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N30E111_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N30E110_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N30E109_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N30E108_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N29E116_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N29E115_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N29E114_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N29E113_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N29E112_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N29E111_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N29E110_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N29E119_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N29E108_dem.tif;",
-                                   "F:/Test/data/ASTERDEM/", \
-                                   "dem.tif","",\
-                                   "16_BIT_SIGNED", "","1", "LAST","FIRST")
+# "拼接栅格"
+def f1():
+    arcpy.MosaicToNewRaster_management("F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N33E111_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N33E110_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N33E109_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N32E113_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N32E112_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N32E111_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N32E110_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N32E109_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N31E116_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N31E115_dem.ti;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N31E114_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N31E113_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N31E112_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N31E111_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N31E110_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N31E109_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N30E116_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N30E115_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N30E114_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N30E113_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N30E112_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N30E111_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N30E110_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N30E109_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N30E108_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N29E116_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N29E115_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N29E114_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N29E113_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N29E112_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N29E111_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N29E110_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N29E119_dem.tif;F:/Test/data/ASTERDEM/DEMtif/ASTGTM2_N29E108_dem.tif;",
+                                   "F:/Test/data/ASTERDEM/",  "dem.tif","","16_BIT_SIGNED", "","1", "LAST","FIRST")
 
 
 def coarseGraining(field, coarseShape):
@@ -80,38 +79,41 @@ def coarseGraining(field, coarseShape):
 #43 79  688 1264    3397    869632  9480, 5160  1339, 729
 
 #
-# inRaster = "F:/Test/data/LST/"+"LTD79N"+".tif"
-# r = arcpy.Raster(inRaster)
-# a = arcpy.RasterToNumPyArray(r)
-# b=np.zeros((729,1339), np.float)
-# for i in range(0,729):
-#     b[i,:]=a[728-i,:]
-#
-# c=coarseGraining(b, (688,1264))
-# d=np.array(c).reshape(869632,1)
+def f2():
+    # "栅格转数组，注意要上下翻转"
+    inRaster = "F:/Test/data/LST/"+"LTD79N"+".tif"
+    r = arcpy.Raster(inRaster)
+    a = arcpy.RasterToNumPyArray(r)
+    b=np.zeros((729,1339), np.float)
+    for i in range(0,729):
+        b[i,:]=a[728-i,:]
 
-# A ="LTDhigh"
-# np.savetxt('F:/Test/OUT/'+"r"+A+".txt", d,fmt = '%.8f')
-#
-# B ="d1"
-# D ="t1"
-# arcpy.env.workspace = "F:/Test/TEMP/"
-# arcpy.TableToDBASE_conversion('F:/Test/OUT/'+"r"+A+'.txt',"F:/Test/TEMP/")
-# arcpy.MakeTableView_management("r"+A+".dbf", B)
-#
-# C="F:/Test/POINT/_869632.shp"
-# # C="F:/Test/POINT/_3397.shp"
-# arcpy.MakeFeatureLayer_management ( C,D )
-# arcpy.AddJoin_management(D, "ORIG_FID", B, "OID")
-#
-# CELLSIZEX = arcpy.GetRasterProperties_management("F:/Test/TEMP/0/_01", "CELLSIZEX")
-# CELLSIZE = CELLSIZEX.getOutput(0)
-# CELLSIZE = str(float(CELLSIZE) /16)
-#
-# arcpy.PointToRaster_conversion(D, "r"+A+".Field1",A+".tif", "MOST_FREQUENT", "NONE", CELLSIZE)
-# arcpy.RemoveJoin_management(D)
-#
-# print "ok!"
+    # "聚合而不是重采样"
+    c=coarseGraining(b, (688,1264))
+    # "保存到txt"
+    d=np.array(c).reshape(869632,1)
+
+    A ="LTDhigh"
+    np.savetxt('F:/Test/OUT/'+"r"+A+".txt", d,fmt = '%.8f')
+    # "创建表图层、要素图层，属性相连"
+    B ="d1"
+    D ="t1"
+    arcpy.env.workspace = "F:/Test/TEMP/"
+    arcpy.TableToDBASE_conversion('F:/Test/OUT/'+"r"+A+'.txt',"F:/Test/TEMP/")
+    arcpy.MakeTableView_management("r"+A+".dbf", B)
+    C="F:/Test/POINT/_869632.shp"
+    # C="F:/Test/POINT/_3397.shp"
+    arcpy.MakeFeatureLayer_management ( C,D )
+    arcpy.AddJoin_management(D, "ORIG_FID", B, "OID")
+    # "获取像元大小，要素转栅格"
+    CELLSIZEX = arcpy.GetRasterProperties_management("F:/Test/TEMP/0/_01", "CELLSIZEX")
+    CELLSIZE = CELLSIZEX.getOutput(0)
+    CELLSIZE = str(float(CELLSIZE) /16)
+    arcpy.PointToRaster_conversion(D, "r"+A+".Field1",A+".tif", "MOST_FREQUENT", "NONE", CELLSIZE)
+    # "移除连接"
+    arcpy.RemoveJoin_management(D)
+
+    print "ok!"
 
 # inRaster = "F:/Test/TEMP/"+"cPhigh"+".tif"
 # r = arcpy.Raster(inRaster)
