@@ -125,12 +125,12 @@ def mfAnalysis(option='MF',pic='N',dimension=2,branch=2):
     #"经常修改的参数"
     row=96
     col=96
-    path='F:/WORK1/MF/'
-    q = np.linspace(-10, 10, 21)    # "q取值范围"
+    path='F:/Test/test/data/2/'
+    q = np.linspace(-40, 40, 21)    # "q取值范围"
 
     # "数据处理"
     data = {}
-    data = np.loadtxt(path+'IM9696.txt')  #
+    data = np.loadtxt(path+'I20159216.txt')  #
     assert len(data)==row*col,"分析阶段：待降尺度数据范围不正确！"
     IMERG = np.array(data).reshape(row,col)# 原始降水数据
     for i in range(0, row):
@@ -141,7 +141,7 @@ def mfAnalysis(option='MF',pic='N',dimension=2,branch=2):
                 IMERG[i, j] = IMERG[i, j]
     #    print IMERG
     data = {}
-    data = np.loadtxt(path+'aveIM9696.txt')
+    data = np.loadtxt(path+'AVEYI9216.txt')
     assert len(data) == row * col, "分析阶段：多年平均数据范围不正确！"
     AveIMERG = np.array(data).reshape(row, col)# 用来匀质化的平均数据
     for i in range(0, row):
@@ -232,7 +232,7 @@ def mfAnalysis(option='MF',pic='N',dimension=2,branch=2):
         plotq_Alpha(q,alpha,path+'/PIC/',"_"+option)
         plotMoment_lambda(scales, q, k, b, moment, R_Squared,path+'/PIC/', "_"+option)
         plotf_Alpha(alpha, f_alpha,path+'/PIC/', "_"+option)
-        plotD_q(q, D_q,path+'/PIC/', "_"+option)
+        plotD_q(q, D_q,path+'/pic/', "_"+option)
 
     # "求二阶导，继而计算β和σ，将q=1处作为返回值"
     # "由于级联降尺度的研究者，分形尺度仍然从1到5，强行把负号移到了taoq上，所以在Xu等的降尺度中，taoq已经变化，增加来自λ的负号"
@@ -283,12 +283,12 @@ def mfDownscaling(option ,beta, sigma,e=0,v=1):
     n = 4
     row=43
     col=79
-    path='F:/WORK1/MF/'
+    path='F:/Test/test/data/4/'
     b = 2
 
     # "数据处理"
     data={}
-    data = np.loadtxt(path+'IM7943.txt')  # IM201607
+    data = np.loadtxt(path+'I20173397.txt')  # IM201607
     assert len(data) == row * col, "降尺度阶段：待降尺度数据范围不正确！"
     IMERG = np.array(data).reshape(row,col)# 原始降水数据
     for i in range(0, row):
@@ -299,7 +299,7 @@ def mfDownscaling(option ,beta, sigma,e=0,v=1):
                 IMERG[i, j] = IMERG[i, j]
     #    print IMERG
     data={}
-    data = np.loadtxt(path+'aveIM7943.txt')
+    data = np.loadtxt(path+'AVEYI3397.txt')
     assert len(data) == row * col, "降尺度阶段：多年平均数据范围不正确！"
     AveIMERG = np.array(data).reshape(row, col)# 用来匀质化的平均数据
     for i in range(0, row):
@@ -352,7 +352,7 @@ def mfDownscaling(option ,beta, sigma,e=0,v=1):
                             cascade[x][y * 2][z * 2 + 1] = cascade[x - 1][y][z] * b ** (temp1 + temp2 * random.gauss(e,v))
                             cascade[x][y * 2 + 1][z * 2] = cascade[x - 1][y][z] * b ** (temp1 + temp2 * random.gauss(e,v))
                             cascade[x][y * 2 + 1][z * 2 + 1] = cascade[x - 1][y][z] * b ** (temp1 + temp2 * random.gauss(e,v))
-                            .0
+
                 #simfield[:,.  :] = coarseGraining(cascade[n], (32, 32))
                 # print("simfield:",simfield)
                 if (j == 0):
@@ -389,9 +389,42 @@ def mfDownscaling(option ,beta, sigma,e=0,v=1):
             result[i * 2 ** n:(i + 1) * 2 ** n, j * 2 ** n:(j + 1) * 2 ** n] = temp * IMERG[i, j] * (
                         2 ** n * 2 ** n)
     result = np.array(result).reshape(row*2**n*col*2**n, 1)
-    np.savetxt(path + "r" + option + ".txt", result, fmt='%.8f')
+    np.savetxt(path + 'out/'+"r" + option + ".txt", result, fmt='%.8f')
     print ("降尺度计算耗时=",time.clock() - st,"秒")
 
+def mf(option='MF',pic='N',dimension=2,branch=2):
+    s = time.clock()
+
+    #"经常修改的参数"
+    row=32
+    col=32
+    path='F:/Test/WuXia/MF/'
+    q = np.linspace(-10, 10, 21)    # "q取值范围"
+
+    # "数据处理"
+    data = {}
+    data = np.loadtxt(path+'wetDay.txt')  #
+    assert len(data)==row*col,"分析阶段：待降尺度数据范围不正确！"
+    IMERG = np.array(data).reshape(row,col)# 原始降水数据
+    d1=[]
+    for i in range(0, row):
+        for j in range(0, col):
+            if (IMERG[i, j] > 0):
+                d1.append(IMERG[i, j])
+    np.savetxt('F:/Test/WuXia/MF/' + "posWetday.txt", d1, fmt='%.8f')
+
+    #    print IMERG
+    data = {}
+    data = np.loadtxt(path+'dryDay.txt')
+    assert len(data) == row * col, "分析阶段：多年平均数据范围不正确！"
+    AveIMERG = np.array(data).reshape(row, col)# 用来匀质化的平均数据
+    d2=[]
+    for i in range(0, row):
+        for j in range(0, col):
+            if (AveIMERG[i, j] > 0):
+                d2.append(AveIMERG[i, j])
+    np.savetxt('F:/Test/WuXia/MF/' + "posDryday.txt", d2, fmt='%.8f')
+mf()
 # 主函数"
 def main():
 
@@ -401,17 +434,17 @@ def main():
     # "多重分形特征验证"
     # "输出5张图，并计算q=1处的β和σ，taoq相关的值统一加负号"
     # beta, sigma,e,v = mfAnalysis(option,pic)
-    beta  =0.0003221456447606301
-    sigma =0.08498305263749407
-    e=0
-    v=1
+    # beta  =0.0003221456447606301
+    # sigma =0.08498305263749407
+    # e=0
+    # v=1
 
-    # beta  =0.00018610559374459146
-    # sigma =0.10707333803819653
-    # e=6.9247792607123975
-    # v=0.6299440380321286
+    # beta  =0.00044041465943576953
+    # sigma =0.00044041465943576953
+    # e=5.064566090972819
+    # v=2.5727662806832368
 
     # "实际降尺度并得到结果"
-    # mfDownscaling("MFn-GWR",beta, sigma,e,v)
+    # mfDownscaling("MFn",beta, sigma,e,v)
 
 main()

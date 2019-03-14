@@ -59,7 +59,7 @@ def f4():
 def f3():
     inRaster = "xxx.hdf"
     outRaster = "yyy.tif"
-    r = arcpy.Raster(inRaster)  #"栅格对象"
+    r = arcpy.Raster(inRaster)  #"栅格对象""用Raster()函数声明栅格对象之后，就可以直接用+-*/等运算符完成地图代数了"
     print r
     a = arcpy.RasterToNumPyArray(r)  #"转数组"
     print len(a)
@@ -71,9 +71,7 @@ def f3():
     r_scaled.save(outRaster)
 # "最邻近插补"
 def f2():
-    import arcpy
-    from arcpy import env
-    from arcpy.sa import *
+
     env.workspace = "F:\\Research\\LST\\0712sub0\\"
     rasters = arcpy.ListRasters()
     _34 = "F:\\Research\\LST\\area\\341000.tif"
@@ -117,7 +115,33 @@ def f1():
             raster.save("xxx.tif")
 
         arcpy.TableToExcel_conversion(mask, "xxx.xls")# "表转Excel"
+
+        arcpy.DirectionalDistribution_stats(raster, out, "1_STANDARD_DEVIATION", "xxx", "#")# "标准差椭圆"
+        arcpy.MeanCenter_stats(raster, out, "xxx", "#", "#")    # "中心"
+
 # ""
 # ""
 # ""
 # ""
+import sys, string, os
+def CMORPH():
+
+    # path = 'F:/Test/WuXia/CMORPH/nc/20090105/'
+    # files = os.listdir(path)
+    # Input_file = []
+    # for i in range(0, len(files)):
+    #     if os.path.splitext(files[i])[1] == '.nc':# "文件获取"
+    #         Input_file.append(path + files[i])
+    # for i in range(0, len(Input_file)):
+    #     layer=str(20090105*100+i)
+    #     arcpy.MakeNetCDFRasterLayer_md(Input_file[i], str(20090105*100+i), "lon", "lat", layer)  # "nc制作图层"
+    #     out="F:/Test/WuXia/CMORPH/tif/20090105/"+str(20090105*100+i)+'.tif'
+    #     arcpy.CopyRaster_management(layer, out, format="TIFF")  # "图层保存为栅格"
+
+    path='F:/Test/WuXia/CMORPH/tif/20090105/'
+    arcpy.env.workspace = path
+    rasters = arcpy.ListRasters()
+
+    out=CellStatistics(rasters,"SUM","NODATA")  # "像元统计" "MEAN/MAJORITY/MAXIMUM/MEDIAN/MINIMUM/MINORITY/RANGE/STD/SUM/VARIETY "    "NODATA"/"DATA"忽略nodata像元
+    out.save("F:/Test/WuXia/CMORPH/tif/20090105.tif")
+CMORPH()

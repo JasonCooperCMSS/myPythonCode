@@ -287,3 +287,54 @@ def nc22tif():
     print("1998_2015")
 
 #nc22tif()
+
+def f9():
+    # for i in range(1,13):
+    #     path='F:\\SA\\DATA\\TIF\\IMERGD\\M\\'
+    #     r1=Raster(path+'2015\\'+'I'+str(201500+i)+'.tif')
+    #     r2=Raster(path+'2016\\'+'I'+str(201600+i)+'.tif')
+    #     r3=Raster(path+'2017\\'+'I'+str(201700+i)+'.tif')
+    #     out=(r1+r2+r3)/3
+    #     out.save('F:\\SA\\DATA\\TIF\\IMERGD\\AVEM\\'+'AVEMI'+str(i)+'.tif')
+
+    # path='F:\\SA\\DATA\\TIF\\IMERGD\\Y\\'
+    # r1=Raster(path+'I'+str(2015)+'.tif')
+    # r2=Raster(path+'I'+str(2000+16)+'.tif')
+    # r3=Raster(path+'I'+str(2000+17)+'.tif')
+    # out=(r1+r2+r3)/3
+    # out.save('F:\\SA\\DATA\\TIF\\IMERGD\\AVEY\\'+'AVEYI'+'.tif')
+
+    # path1 = 'F:\\SA\\DATA\\TIF\\IMERGD\\0\\'
+    # path2 = 'F:\\SA\\DATA\\TIF\\IMERGD\\1\\'
+    # path3 = 'F:\\SA\\DATA\\TIF\\IMERGD\\2\\'
+    # path4 = 'F:\\SA\\DATA\\TIF\\IMERGD\\3\\'
+    # path5 = 'F:\\SA\\DATA\\TIF\\IMERGD\\4\\'
+    # env.workspace = path1
+    # rasters = arcpy.ListRasters()
+    # mask1='F:/Test/HB/_96.shp'
+    # mask2='F:/Test/HB/_7943.shp'
+    # for raster in rasters:
+    #     out1 = ExtractByMask(raster, mask1)  # "按掩膜提取"
+    #     out1.save(path2+raster)
+    #     r = out1
+    #     a = arcpy.RasterToNumPyArray(r)
+    #     b = np.zeros((96, 96), np.float)
+    #     for i in range(0, 96):
+    #         b[i, :] = a[95 - i, :]
+    #     d = np.array(b).reshape(9216, 1)
+    #     np.savetxt(path3 + raster[0:len(raster)-4] + "9216.txt", d, fmt='%.8f')
+    #
+    #     out1 = ExtractByMask(raster, mask2)  # "按掩膜提取"
+    #     out1.save(path4+raster)
+    #     r = out1
+    #     a = arcpy.RasterToNumPyArray(r)
+    #     b = np.zeros((43, 79), np.float)
+    #     for i in range(0, 43):
+    #         b[i, :] = a[42 - i, :]
+    #     d = np.array(b).reshape(3397, 1)
+    #     np.savetxt(path5 + raster[0:len(raster)-4] + "3397.txt", d, fmt='%.8f')
+    path5 = 'F:\\SA\\DATA\\TIF\\IMERGD\\5\\'
+    env.workspace = path5
+    rasters = arcpy.ListRasters()
+    mask3='F:/Test/HB/_96.shp'
+f9()
