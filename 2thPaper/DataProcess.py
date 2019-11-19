@@ -140,6 +140,9 @@ def f3():
 
 
 def f4(x, y):
+    x=np.array(x,dtype=np.float)
+    y=np.array(y,dtype=np.float)
+
     xave = [sum(x) / len(x) for i in range(0, len(x))]
     yave = [sum(y) / len(y) for i in range(0, len(y))]
     xe = x - xave
@@ -151,10 +154,10 @@ def f4(x, y):
     MAE = sum(abs(y - x)) / len(x)
 
     r = []
-    r.append(R2)
-    r.append(RMSE)
-    r.append(Bias)
-    r.append(MAE)
+    r.append(R2[0])
+    r.append(RMSE[0])
+    r.append(Bias[0])
+    r.append(MAE[0])
     return r
 
 

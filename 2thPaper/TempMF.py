@@ -15,7 +15,6 @@ import matplotlib.pyplot as plt
 # import statsmodels.api as sm
 import random
 
-
 def coarseGraining(field, coarseShape):
     # "计算聚合时的窗口大小"
     rowRatio = sympy.S(field.shape[0]) / coarseShape[0]# "保持用分数形式相加，边界不出问题"
@@ -158,44 +157,25 @@ def exportPlot(logLambd,logMoment,k,b,q,alpha,f_alpha,taoq,D_q,pathAnalysis,file
         plt.close(5)
 
 #   MF分形
-def f7(option,pic,pathIMERG, path3Mean, pathOutput, pathGWR,fileName):
-
+def MFRC(option, pic, pathIMERG, path3Mean, pathGWR, pathResultRaster,pathAnalysis,fileName):
     timeOfprocess = time.clock()
 
-    option='MF'   #'MFn'   'MFn-GWR'    控制选择一种分形
-    pic='Y' #   'N' 控制是否制作特征图
     dimension = 2
     branch = 2
     m = 20  #随机级联的次数
     n = 4   #每次级联的层数
-    # "经常修改的参数"
-
-    fileName = fileName
-    # path = pathIMERG
-    pathIMERG= pathIMERG
-    path3Mean= path3Mean
-
-    pathResultRaster=pathOutput+'Rasters/'
-    pathAnalysis=pathOutput+'Analysis/'
-    #   此处应留GWR数据的操作
-    if (option=='MFn-GWR'):
-        pathGWR=''
-
-    q = np.linspace(-10, 10, 21)  # "q取值范围"
-
+    q = np.linspace(-5, 5, 11)  # "q取值范围"
 
     # 读入栅格数据
     rasIMERG = arcpy.Raster(pathIMERG)
     ras3Mean = arcpy.Raster(path3Mean)
 
-    # Set environmental variables for output
     arcpy.env.overwriteOutput = True
     arcpy.env.outputCoordinateSystem = rasIMERG
     outResolution = 1000
     cellWidth = rasIMERG.meanCellWidth/16.0
     cellHeight = rasIMERG.meanCellHeight/16.0
     lowerLeft = arcpy.Point(rasIMERG.extent.XMin, rasIMERG.extent.YMin)
-
 
     # Convert Raster to numpy array
     arrIMERG = arcpy.RasterToNumPyArray(rasIMERG)
@@ -213,12 +193,11 @@ def f7(option,pic,pathIMERG, path3Mean, pathOutput, pathGWR,fileName):
     # "匀质化"
     row = arrIMERG.shape[0]
     col = arrIMERG.shape[1]
-
+    # print row,col
     for i in range(0, row):
         for j in range(0, col):
             arr3Mean[i,j]=arr3Mean[i,j]/np.sum(arr3Mean)*(row*col)
 
-# print row,col
     field = np.empty((row, col), np.float)
     for i in range(0, row):
         for j in range(0, col):
@@ -226,12 +205,12 @@ def f7(option,pic,pathIMERG, path3Mean, pathOutput, pathGWR,fileName):
                 field[i, j] = arrIMERG[i, j] / arr3Mean[i, j]
             else:
                 field[i, j] = 0
-    print("field:", np.mean(arrIMERG))
-    print("field:", np.mean(field))
+    print("originFieldAve:", np.mean(arrIMERG))
+    print("noZeroFieldAve:", np.mean(field))
 
     # field=arrIMERG
 
-    # "归一化"
+    # "归一化",之前应该讨论过，为了MF统计矩那张图开口朝向，不应该归一化
     # sumField = np.sum(field)
     # if (sumField > 0):
     #     field = field / sumField
@@ -273,18 +252,11 @@ def f7(option,pic,pathIMERG, path3Mean, pathOutput, pathGWR,fileName):
     # "证明具有幂律特征"# "求tao(q),tao(q)就是斜率"
     k = np.zeros(len(q))  # 存放斜率
     b = np.zeros(len(q))  # 存放截距
-    # R_Squared = np.zeros(len(q))  # 存放R方
 
-    # x = np.log(lambd) / np.log(2)  # log以2为底的lambda,线性最小二乘的X输入
-    # X = sm.add_constant(X.T)  # 加上截距项
     for i in range(0, len(q)):
-        # y = np.log(moment[:, i]) / np.log(2)  # log以2为底的moment，线性最小二乘的X输入
-        # results = sm.OLS(Y, X).fit()  # log以2为底的moment和lambda的线性拟合
         line = np.polyfit(logLambd, logMoment[:, i], 1)
         k[i] = line[0]  # 斜率
         b[i] = line[1]  # 截距
-        # R_Squared[i] = results.rsquared
-        # print("k:", k[i], "b:", b[i], "Rsquared:", R_Squared[i])
 
     # "在多重分形领域taoq就是上面的斜率，与级联降尺度中的taoq不同"
     taoq = -k
@@ -318,6 +290,7 @@ def f7(option,pic,pathIMERG, path3Mean, pathOutput, pathGWR,fileName):
     e = 0
     v = 1
     for i in range(0, len(q)):
+        # print q[i]
         if (q[i] >= 1):
             if (option == "MF"):
                 # "X是标准正态分布"
@@ -341,121 +314,119 @@ def f7(option,pic,pathIMERG, path3Mean, pathOutput, pathGWR,fileName):
     exportPlot(logLambd,logMoment,k,b,q,alpha,f_alpha,taoq,D_q,pathAnalysis,fileName,pic,beta,sigma,e,v)
 
     timeOfprocess=time.clock() - timeOfprocess
-    print "多重分形特征分析及参数计算耗时=", timeOfprocess, "秒"
+    print "多重分形特征分析及参数计算耗时:{:.0f}m {:.0f}s.\n".format((int(timeOfprocess)/60),(int(timeOfprocess)%60))
 
-    # # "实际降尺度并得到结果"
-    # fieldAll = []
-    # cascade = []
-    # for i in range(0, n + 1):
-    #     cascade.append(np.zeros((branch ** i, branch ** i), np.double))
-    # # print ("cascade:",cascade)
-    #
-    # gamma = beta - sigma * e - v * sigma ** 2 * np.log(branch**2) / 2
-    #
-    # # "循环m次"
-    # for k in range(0, m):
-    #     for i in range(row):
-    #         for j in range(col):
-    #             cascade[0][0][0] = field[i, j]
-    #             for x in range(1, n + 1):
-    #                 for y in range(0, branch ** (x - 1)):
-    #                     for z in range(0, branch ** (x - 1)):
-    #                         w=np.zeros((4,1),float)
-    #                         if (random.uniform(0,1)<=(branch**2)**(-beta)):
-    #                             w[0]=(branch**2) ** (gamma + sigma * random.gauss(e, v))
-    #                         else:
-    #                             w[0]=0
-    #                         if (random.uniform(0,1)<=(branch**2)**(-beta)):
-    #                             w[1]=(branch**2) ** (gamma + sigma * random.gauss(e, v))
-    #                         else:
-    #                             w[1]=0
-    #                         if (random.uniform(0,1)<=(branch**2)**(-beta)):
-    #                             w[2]=(branch**2) ** (gamma + sigma * random.gauss(e, v))
-    #                         else:
-    #                             w[2]=0
-    #                         w[3]=4-w[0]-w[1]-w[2]
-    #                         # print w
-    #
-    #                         cascade[x][y * 2][z * 2] = cascade[x - 1][y][z] * w[0]
-    #                         cascade[x][y * 2][z * 2 + 1] = cascade[x - 1][y][z] * w[1]
-    #                         cascade[x][y * 2 + 1][z * 2] = cascade[x - 1][y][z] * w[2]
-    #                         cascade[x][y * 2 + 1][z * 2 + 1] = cascade[x - 1][y][z] * w[3]
-    #             # simfield[:,.  :] = coarseGraining(cascade[n], (32, 32))
-    #             # print("simfield:",simfield)
-    #             if (j == 0):
-    #                 fieldRow = cascade[n].copy()
-    #             else:
-    #                 fieldRow = np.hstack((fieldRow, cascade[n].copy()))
-    #         if (i == 0):
-    #             fieldMatrix = fieldRow.copy()
-    #         else:
-    #             fieldMatrix = np.vstack((fieldMatrix, fieldRow.copy()))
-    #     # np.savetxt('F:/Test/OUT/'+"fieldAll"+str(k)+""+".txt",fieldMatrix,fmt = '%.8f')
-    #     fieldAll.append(fieldMatrix)
-    #
-    # # "求多次结果平均值"
-    # fieldAve = np.zeros((row * 2 ** n, col * 2 ** n), np.double)
-    # for k in range(0, m):
-    #     fieldAve = fieldAve + fieldAll[k]
-    # fieldAve = fieldAve / m
-    # # np.savetxt('F:/Test/OUT/'+"fieldAve"+"ave"+".txt", fieldAve,fmt = '%.8f')
-    #
-    # # "恢复异质性"
-    # fieldHeter = np.zeros((row * 2 ** n, col * 2 ** n), np.double)
-    # for i in range(0, row):
-    #     for j in range(0, col):
-    #         if option == 'MFn-GWR':
-    #             temp = arrGWR[i * 2 ** n:(i + 1) * 2 ** n, j * 2 ** n:(j + 1) * 2 ** n] \
-    #                    * fieldAve[ i * 2 ** n:(i + 1) * 2 ** n, j * 2 ** n:(j + 1) * 2 ** n]
-    #         else:
-    #             temp = arr3Mean[i, j] * fieldAve[i * 2 ** n:(i + 1) * 2 ** n, j * 2 ** n:(j + 1) * 2 ** n]
-    #         if (np.sum(temp) != 0):
-    #             temp = temp / np.sum(temp)
-    #         else:
-    #             temp = 0
-    #         fieldHeter[i * 2 ** n:(i + 1) * 2 ** n, j * 2 ** n:(j + 1) * 2 ** n] = temp * arrIMERG[i, j] * (
-    #                 2 ** n * 2 ** n)
-    # # result = np.array(result).reshape(row * 2 ** n * col * 2 ** n, 1)
-    # # np.savetxt(path + 'out/' + "r" + option + ".txt", result, fmt='%.8f')
-    #
-    # # 输出数据，制作栅格
-    # tempRaster = arcpy.NumPyArrayToRaster(fieldHeter,lowerLeft,cellWidth,cellHeight)
-    # onekmRaster=pathResultRaster + 'r'+fileName+".tif"
-    # arcpy.Resample_management(tempRaster, onekmRaster, outResolution, "BILINEAR")   #"重采样到1km"
-    #
-    # timeOfprocess=time.clock() - timeOfprocess
-    # print "降尺度计算耗时=", timeOfprocess, "秒"
-def f8():
+    # "实际降尺度并得到结果"
+    fieldAll = []
+    cascade = []
+    for i in range(0, n + 1):
+        cascade.append(np.zeros((branch ** i, branch ** i), np.double))
+    # print ("cascade:",cascade)
 
-    tt=time.clock()
+    gamma = beta - sigma * e - v * sigma ** 2 * np.log(branch**2) / 2
 
-    option = 'MF'  # 'MFn'   'MFn-GWR'    控制选择一种分形
+    # "循环m次"
+    for k in range(0, m):
+        for i in range(row):
+            for j in range(col):
+                cascade[0][0][0] = field[i, j]
+                for x in range(1, n + 1):
+                    for y in range(0, branch ** (x - 1)):
+                        for z in range(0, branch ** (x - 1)):
+                            w=np.zeros((4,1),float)
+                            if (random.uniform(0,1)<=(branch**2)**(-beta)):
+                                w[0]=(branch**2) ** (gamma + sigma * random.gauss(e, v))
+                            else:
+                                w[0]=0
+                            if (random.uniform(0,1)<=(branch**2)**(-beta)):
+                                w[1]=(branch**2) ** (gamma + sigma * random.gauss(e, v))
+                            else:
+                                w[1]=0
+                            if (random.uniform(0,1)<=(branch**2)**(-beta)):
+                                w[2]=(branch**2) ** (gamma + sigma * random.gauss(e, v))
+                            else:
+                                w[2]=0
+                            w[3]=4-w[0]-w[1]-w[2]
+                            # print w
+
+                            cascade[x][y * 2][z * 2] = cascade[x - 1][y][z] * w[0]
+                            cascade[x][y * 2][z * 2 + 1] = cascade[x - 1][y][z] * w[1]
+                            cascade[x][y * 2 + 1][z * 2] = cascade[x - 1][y][z] * w[2]
+                            cascade[x][y * 2 + 1][z * 2 + 1] = cascade[x - 1][y][z] * w[3]
+                # simfield[:,.  :] = coarseGraining(cascade[n], (32, 32))
+                # print("simfield:",simfield)
+                if (j == 0):
+                    fieldRow = cascade[n].copy()
+                else:
+                    fieldRow = np.hstack((fieldRow, cascade[n].copy()))
+            if (i == 0):
+                fieldMatrix = fieldRow.copy()
+            else:
+                fieldMatrix = np.vstack((fieldMatrix, fieldRow.copy()))
+        # np.savetxt('F:/Test/OUT/'+"fieldAll"+str(k)+""+".txt",fieldMatrix,fmt = '%.8f')
+        fieldAll.append(fieldMatrix)
+
+    # "求多次结果平均值"
+    fieldAve = np.zeros((row * 2 ** n, col * 2 ** n), np.double)
+    for k in range(0, m):
+        fieldAve = fieldAve + fieldAll[k]
+    fieldAve = fieldAve / m
+    # np.savetxt('F:/Test/OUT/'+"fieldAve"+"ave"+".txt", fieldAve,fmt = '%.8f')
+
+    # "恢复异质性"
+    fieldHeter = np.zeros((row * 2 ** n, col * 2 ** n), np.double)
+    for i in range(0, row):
+        for j in range(0, col):
+            if option == 'MFn-GWR' or option =='MF-GWR':
+                temp = arrGWR[i * 2 ** n:(i + 1) * 2 ** n, j * 2 ** n:(j + 1) * 2 ** n] \
+                       * fieldAve[ i * 2 ** n:(i + 1) * 2 ** n, j * 2 ** n:(j + 1) * 2 ** n]
+            else:
+                temp = arr3Mean[i, j] * fieldAve[i * 2 ** n:(i + 1) * 2 ** n, j * 2 ** n:(j + 1) * 2 ** n]
+            if (np.sum(temp) != 0):
+                temp = temp / np.sum(temp)
+            else:
+                temp = 0
+            fieldHeter[i * 2 ** n:(i + 1) * 2 ** n, j * 2 ** n:(j + 1) * 2 ** n] = temp * arrIMERG[i, j] * (
+                    2 ** n * 2 ** n)
+    # result = np.array(result).reshape(row * 2 ** n * col * 2 ** n, 1)
+    # np.savetxt(path + 'out/' + "r" + option + ".txt", result, fmt='%.8f')
+
+    # 输出数据，制作栅格
+    tempRaster = arcpy.NumPyArrayToRaster(fieldHeter,lowerLeft,cellWidth,cellHeight)
+    onekmRaster=pathResultRaster + 'r'+fileName+".tif"
+    arcpy.Resample_management(tempRaster, onekmRaster, outResolution, "BILINEAR")   #"重采样到1km"
+
+    timeOfprocess=time.clock() - timeOfprocess
+    print "降尺度计算耗时:{:.0f}m {:.0f}s.\n".format((int(timeOfprocess)/60),(int(timeOfprocess)%60))
+def main():
+    timeOfprocess = time.clock()
+    #//////////////////////////
+    option = 'MF'  # 'MFn'   'MFn-GWR'  'MF-GWR   控制选择一种分形
     pic = 'Y'  # 'N' 控制是否制作特征图
 
-    for i in range(0,2):
+    # 路径
+    pathIMERG = 'F:/Test/Paper180829/Data/IMERG/' + '10km8048/'
+    path3Mean = 'F:/Test/Paper180829/Data/IMERG/' + '3Mean_UTMHB8048/'
+    if (option == 'MF-GWR' or option == 'MFn-GWR'):
+        pathGWR = ''
+    else:
+        pathGWR = ''
+    pathOutput = 'F:/Test/Paper180829/Process/' + 'Temp/'
+    pathResultRaster=pathOutput+'Rasters/'
+    pathAnalysis=pathOutput+'Analysis/'
+    # //////////////////////////
 
-        fileName=str((2015+i//12)*100+i%12+1)
-        pathIMERG='F:/Test/Paper180829/Data/IMERG/10km8048/'+'I'+fileName+'.tif' #UTM8048    UTM9696
-        # path3Mean='F:/Test/Paper180829/Data/IMERG/3Mean_UTMHB8048/'+str(i%12+1)+'.tif'    ##3Mean_UTM9696
-        path3Mean = 'F:/Test/Paper180829/Data/IMERG/3Mean_UTMHB8048/' + str(i % 12 + 1) + '.tif'  ##3Mean_UTM9696
-        pathOutput='F:/Test/Paper180829/Process/'+'TempMF/'
-        if (option == 'MF-GWR'):
-            pathGWR=''
+    for i in range(0, 1):  # 文件遍历，随机应变
+        filedate = str(201501)
+        fileIMERG = pathIMERG + 'I' + filedate + '.tif'  # UTM8048    UTM9696
+        file3Mean = path3Mean + str(i % 12 + 1) + '.tif'  ##3Mean_UTM9696
+        if (option == 'MF-GWR' or option == 'MFn-GWR'):
+            fileGWR = pathGWR + '/'
         else:
-            pathGWR = ''
-        f7(option,pic,pathIMERG, path3Mean, pathOutput, pathGWR,fileName)
+            fileGWR = ''
+        MFRC(option, pic, fileIMERG, file3Mean, fileGWR, pathResultRaster,pathAnalysis, filedate)
 
-    # points = 'F:/Test/Paper180829/data/POINT/' + 'UTMPOINTS83.shp'
-    # pathRasters=pathOutput+'Rasters/'
-    # arcpy.env.workspace =pathRasters
-    # rasters=arcpy.ListRasters()
-    #
-    # for raster in rasters:
-    #     out3=pathOutput + 'RG/' +raster[0:7]+'.shp'
-    #     ExtractValuesToPoints(points, raster, out3, "INTERPOLATE", "VALUE_ONLY")  #"值提取到点"
-    #
-    #     out4=pathOutput + 'Excels/' +raster[0:7]+'.xls'
-    #     arcpy.TableToExcel_conversion(out3, out4)  # "表转Excel"
+    timeOfprocess = time.clock()-timeOfprocess
+    print "总花费时间为:{:.0f}m {:.0f}s.\n".format((int(timeOfprocess)/60),(int(timeOfprocess)%60))
 
-    print "总花费时间为：",time.clock()-tt,"秒"
-f8()
+main()

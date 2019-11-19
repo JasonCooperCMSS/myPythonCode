@@ -1,4 +1,4 @@
-# coding:utf-8
+# coding:gbk
 import arcpy
 from arcpy import env
 from arcpy.sa import *
@@ -15,16 +15,16 @@ import matplotlib.pyplot as plt
 import random
 
 def coarseGraining(field, coarseShape):
-    # "è®¡ç®—èšåˆæ—¶çš„çª—å£å¤§å°"
-    rowRatio = sympy.S(field.shape[0]) / coarseShape[0]# "ä¿æŒç”¨åˆ†æ•°å½¢å¼ç›¸åŠ ï¼Œè¾¹ç•Œä¸å‡ºé—®é¢˜"
-    colRatio = sympy.S(field.shape[1]) / coarseShape[1]# "ä¿æŒç”¨åˆ†æ•°å½¢å¼ç›¸åŠ ï¼Œè¾¹ç•Œä¸å‡ºé—®é¢˜"
+    # "¼ÆËã¾ÛºÏÊ±µÄ´°¿Ú´óĞ¡"
+    rowRatio = sympy.S(field.shape[0]) / coarseShape[0]# "±£³ÖÓÃ·ÖÊıĞÎÊ½Ïà¼Ó£¬±ß½ç²»³öÎÊÌâ"
+    colRatio = sympy.S(field.shape[1]) / coarseShape[1]# "±£³ÖÓÃ·ÖÊıĞÎÊ½Ïà¼Ó£¬±ß½ç²»³öÎÊÌâ"
     # print rowRatio
-    # "å¾ªç¯è®¡ç®—å½“å‰å±‚çº§æ¯ä¸ªæ ¼ç½‘çš„å–å€¼"
-    # "é’ˆå¯¹éæ•´æ•°å€çš„ç²—ç²’åŒ–ï¼ˆç±»ä¼¼æ’å€¼ä½†ä¸æ˜¯ï¼‰ï¼ŒæŒ‰å åŸæ•´æ ¼é¢ç§¯çš„æ¯”ä¾‹è¿›è¡Œç´¯åŠ ã€‚"
-    # "åˆ¶ä½œçš„windowå…¶å®æ˜¯ä¸€ä¸ªé¢ç§¯æ¯”ä¾‹ï¼Œwindowä¸fieldç›¸ä¹˜å…¶å®å°±åªæ˜¯æŒ‰ä½ç½®ç›¸ä¹˜"
-    # "ç”±äºi,jæ˜¯å…ˆè¡Œååˆ—ï¼Œæ‰€ä»¥æˆ‘å¯¹hå’Œvè¿›è¡Œäº†è°ƒæ•´ï¼Œä¹Ÿå…ˆè¡Œååˆ—ï¼Œç„¶åç”±äºfield[math.floor(bottom):math.ceil(top),math.floor(left):math.ceil(right)]æ˜¯ç¬¬ä¸€ä¸ªå‚æ•°ä¸ºè¡Œï¼Œ"
-    # "åä¸€ä¸ªå‚æ•°ä¸ºåˆ—ï¼Œæ‰€ä»¥ä¸¤ä¸ªå‚æ•°çš„é¡ºåºä¹Ÿå¾—è°ƒæ•´"
-    # "çœ‹ä¼¼åªä¸è¿‡å‡å°‘äº†ä¸€è¡Œè½¬ç½®æ“ä½œï¼Œå®åˆ™åœ¨windowçš„ç†è§£å’Œfieldçš„å¾ªç¯ä¸Šéƒ½æ›´æ¸…æ¥šäº†ï¼Œå…ˆè¡Œååˆ—ï¼"
+    # "Ñ­»·¼ÆËãµ±Ç°²ã¼¶Ã¿¸ö¸ñÍøµÄÈ¡Öµ"
+    # "Õë¶Ô·ÇÕûÊı±¶µÄ´ÖÁ£»¯£¨ÀàËÆ²åÖµµ«²»ÊÇ£©£¬°´Õ¼Ô­Õû¸ñÃæ»ıµÄ±ÈÀı½øĞĞÀÛ¼Ó¡£"
+    # "ÖÆ×÷µÄwindowÆäÊµÊÇÒ»¸öÃæ»ı±ÈÀı£¬windowÓëfieldÏà³ËÆäÊµ¾ÍÖ»ÊÇ°´Î»ÖÃÏà³Ë"
+    # "ÓÉÓÚi,jÊÇÏÈĞĞºóÁĞ£¬ËùÒÔÎÒ¶ÔhºÍv½øĞĞÁËµ÷Õû£¬Ò²ÏÈĞĞºóÁĞ£¬È»ºóÓÉÓÚfield[math.floor(bottom):math.ceil(top),math.floor(left):math.ceil(right)]ÊÇµÚÒ»¸ö²ÎÊıÎªĞĞ£¬"
+    # "ºóÒ»¸ö²ÎÊıÎªÁĞ£¬ËùÒÔÁ½¸ö²ÎÊıµÄË³ĞòÒ²µÃµ÷Õû"
+    # "¿´ËÆÖ»²»¹ı¼õÉÙÁËÒ»ĞĞ×ªÖÃ²Ù×÷£¬ÊµÔòÔÚwindowµÄÀí½âºÍfieldµÄÑ­»·ÉÏ¶¼¸üÇå³şÁË£¬ÏÈĞĞºóÁĞ£¡"
     coarseField = np.zeros((coarseShape), np.float)
 
     top = 0
@@ -61,13 +61,13 @@ def coarseGraining(field, coarseShape):
             window = window_v * window_h
             # print window
             # window = np.transpose(window)
-            # å¯¹äºæ•°ç»„çš„ç›¸ä¹˜ï¼Œâ€œ*â€å·æ„æ€æ˜¯å¯¹åº”ç›¸ä¹˜ï¼Œå¯¹äºçŸ©é˜µæ¥è¯´æ‰æ˜¯çŸ©é˜µç›¸ä¹˜ã€‚
+            # ¶ÔÓÚÊı×éµÄÏà³Ë£¬¡°*¡±ºÅÒâË¼ÊÇ¶ÔÓ¦Ïà³Ë£¬¶ÔÓÚ¾ØÕóÀ´Ëµ²ÅÊÇ¾ØÕóÏà³Ë¡£
             coarseField[i, j] = np.sum(
                 window * field[int(math.floor(bottom)):int(math.ceil(top)), int(math.floor(left)):int(math.ceil(right))])
             # print(coarseField[i, j])
     return coarseField
 def exportPlot(logLambd,logMoment,k,b,q,alpha,f_alpha,taoq,D_q,pathAnalysis,fileName,pic,beta,sigma,e,v):
-    #   å¯¼å‡ºåˆ†å½¢ç‰¹å¾æ•°æ®
+    #   µ¼³ö·ÖĞÎÌØÕ÷Êı¾İ
     workbook = xlwt.Workbook(encoding='utf-8')
     worksheet = workbook.add_sheet(fileName)
     worksheet.write(0, 0, "log(Moments)&Log(lambda)")
@@ -96,17 +96,17 @@ def exportPlot(logLambd,logMoment,k,b,q,alpha,f_alpha,taoq,D_q,pathAnalysis,file
     workbook.save(outExcel)
 
 
-    # "åˆ¶ä½œå¤šé‡åˆ†å½¢ç‰¹å¾å›¾"
+    # "ÖÆ×÷¶àÖØ·ÖĞÎÌØÕ÷Í¼"
     if pic == 'Y':
 
-        # "ä½œå›¾log2ç»Ÿè®¡çŸ©ä¸log2åˆ†å‹å°ºåº¦"
+        # "×÷Í¼log2Í³¼Æ¾ØÓëlog2·ÖĞÍ³ß¶È"
         plt.figure(1)
         x = logLambd
         for j in range(0, len(q)):
             plt.scatter(logLambd, logMoment[:,j])
             plt.plot(logLambd, k[j] * logLambd + b[j], "-")
             plt.text(logLambd[0], logMoment[:, j][0], 'q=' + str(q[j])[0:4], rotation=0)
-        #      plt.text(x[-3], y[-3], 'q=' + str(q[j])[0:4] + ',$R^2=$' + str(rsquared[j])[0:6],rotation=-5)  # å°†qå’Œr2çš„å€¼æ˜¾ç¤ºåœ¨å›¾ä¸Šï¼Œä»¥åŠæ˜¾ç¤ºçš„ä½ç½®
+        #      plt.text(x[-3], y[-3], 'q=' + str(q[j])[0:4] + ',$R^2=$' + str(rsquared[j])[0:6],rotation=-5)  # ½«qºÍr2µÄÖµÏÔÊ¾ÔÚÍ¼ÉÏ£¬ÒÔ¼°ÏÔÊ¾µÄÎ»ÖÃ
         # plt.xlim(-1, 6)
         # plt.ylim(-60, 100)
         plt.xlabel(r'$Log_2[\lambda]$')
@@ -115,7 +115,7 @@ def exportPlot(logLambd,logMoment,k,b,q,alpha,f_alpha,taoq,D_q,pathAnalysis,file
         # plt.show(1)
         plt.close(1)
 
-        # "ä½œå›¾qä¸Alpha"
+        # "×÷Í¼qÓëAlpha"
         plt.figure(2)
         plt.plot(q, alpha, "-o", label=fileName, color='blue')
         plt.plot((list(q)[0], list(q)[-1]), (list(alpha)[0], list(alpha)[-1]), color='red')
@@ -125,7 +125,7 @@ def exportPlot(logLambd,logMoment,k,b,q,alpha,f_alpha,taoq,D_q,pathAnalysis,file
         # plt.show(2)
         plt.close(2)
 
-        # "ä½œå›¾Alphaä¸f_Alpha"
+        # "×÷Í¼AlphaÓëf_Alpha"
         plt.figure(3)
         plt.plot(alpha, f_alpha, "-o", label=fileName, color='blue')
         plt.xlabel(r'${\alpha}$')
@@ -134,7 +134,7 @@ def exportPlot(logLambd,logMoment,k,b,q,alpha,f_alpha,taoq,D_q,pathAnalysis,file
         # plt.show(3)
         plt.close(3)
 
-        # "ä½œå›¾qä¸taoq"
+        # "×÷Í¼qÓëtaoq"
         plt.figure(4)
         plt.plot(q, taoq, "-o", label=fileName, color='blue')
         plt.plot((list(q)[0], list(q)[-1]), (list(taoq)[0], list(taoq)[-1]), color='red')
@@ -144,7 +144,7 @@ def exportPlot(logLambd,logMoment,k,b,q,alpha,f_alpha,taoq,D_q,pathAnalysis,file
         # plt.show(4)
         plt.close(4)
 
-        # "ä½œå›¾qä¸D(q)"
+        # "×÷Í¼qÓëD(q)"
         plt.figure(5)
         plt.plot(q, D_q, "-o", label=fileName, color='blue')
         plt.plot((list(q)[0], list(q)[-1]), (list(D_q)[0], list(D_q)[-1]), color='red')
@@ -155,19 +155,19 @@ def exportPlot(logLambd,logMoment,k,b,q,alpha,f_alpha,taoq,D_q,pathAnalysis,file
         # plt.show(5)
         plt.close(5)
 
-#   MFåˆ†å½¢
+#   MF·ÖĞÎ
 def MFRC(option,pic,pathIMERG, path3Mean, pathOutput, pathGWR,fileName):
 
     timeOfprocess = time.clock()
 
-    # option='MF'   #'MFn'   'MFn-GWR'    æ§åˆ¶é€‰æ‹©ä¸€ç§åˆ†å½¢
-    # pic='Y' #   'N' æ§åˆ¶æ˜¯å¦åˆ¶ä½œç‰¹å¾å›¾
+    # option='MF'   #'MFn'   'MFn-GWR'    ¿ØÖÆÑ¡ÔñÒ»ÖÖ·ÖĞÎ
+    # pic='Y' #   'N' ¿ØÖÆÊÇ·ñÖÆ×÷ÌØÕ÷Í¼
 
     dimension = 2
     branch = 2
-    m = 50  #éšæœºçº§è”çš„æ¬¡æ•°
-    n = 4   #æ¯æ¬¡çº§è”çš„å±‚æ•°
-    # "ç»å¸¸ä¿®æ”¹çš„å‚æ•°"
+    m = 50  #Ëæ»ú¼¶ÁªµÄ´ÎÊı
+    n = 4   #Ã¿´Î¼¶ÁªµÄ²ãÊı
+    # "¾­³£ĞŞ¸ÄµÄ²ÎÊı"
 
     fileName = fileName
     # path = pathIMERG
@@ -176,14 +176,14 @@ def MFRC(option,pic,pathIMERG, path3Mean, pathOutput, pathGWR,fileName):
 
     pathResultRaster=pathOutput+'Rasters/'
     pathAnalysis=pathOutput+'Analysis/'
-    #   æ­¤å¤„åº”ç•™GWRæ•°æ®çš„æ“ä½œ
+    #   ´Ë´¦Ó¦ÁôGWRÊı¾İµÄ²Ù×÷
     if (option=='MFn-GWR'):
         pathGWR=''
 
-    q = np.linspace(-10, 10, 21)  # "qå–å€¼èŒƒå›´"
+    q = np.linspace(-10, 10, 21)  # "qÈ¡Öµ·¶Î§"
 
 
-    # è¯»å…¥æ …æ ¼æ•°æ®
+    # ¶ÁÈëÕ¤¸ñÊı¾İ
     rasIMERG = arcpy.Raster(pathIMERG)
     ras3Mean = arcpy.Raster(path3Mean)
 
@@ -208,7 +208,7 @@ def MFRC(option,pic,pathIMERG, path3Mean, pathOutput, pathGWR,fileName):
 
     # print arrIMERG,'\n\n\n',arr3Mean  #arrGWR
 
-    # "åŒ€è´¨åŒ–"
+    # "ÔÈÖÊ»¯"
     row = arrIMERG.shape[0]
     col = arrIMERG.shape[1]
 
@@ -216,7 +216,7 @@ def MFRC(option,pic,pathIMERG, path3Mean, pathOutput, pathGWR,fileName):
         for j in range(0, col):
             arr3Mean[i,j]=arr3Mean[i,j]/np.sum(arr3Mean)*(row*col)
 
-    # print row,col
+# print row,col
     field = np.empty((row, col), np.float)
     for i in range(0, row):
         for j in range(0, col):
@@ -229,26 +229,25 @@ def MFRC(option,pic,pathIMERG, path3Mean, pathOutput, pathGWR,fileName):
 
     # field=arrIMERG
 
-    # "å½’ä¸€åŒ–"
+    # "¹éÒ»»¯"
     # sumField = np.sum(field)
     # if (sumField > 0):
     #     field = field / sumField
     # print field
 
     fieldSize = field.shape[0]
-    # "layers+1 å³å‘ä¸Šåˆ†æçš„å±‚æ•°ï¼Œscaleså³æ¯å±‚ä¸­åƒå…ƒå¤§å°å¯¹åº”çš„èµ·å§‹0.1åº¦æ—¶çš„å€æ•°"
+    # "layers+1 ¼´ÏòÉÏ·ÖÎöµÄ²ãÊı£¬scales¼´Ã¿²ãÖĞÏñÔª´óĞ¡¶ÔÓ¦µÄÆğÊ¼0.1¶ÈÊ±µÄ±¶Êı"
     layers = np.arange(0, int(math.log(fieldSize, branch)))
     scales = branch ** layers
     # print("layers:", layers, "scales:", scales)
 
-    # "æ±‚ç»Ÿè®¡çŸ©moment"
-    # "d1ç”¨æ¥è®¡ç®—taoqçš„ä¸€é˜¶å¯¼(æ±‚å¥‡å¼‚å€¼alphaå’Œå‚æ•°beta")ï¼Œd2ç”¨æ¥è®¡ç®—taoqçš„äºŒé˜¶å¯¼ï¼ˆæ±‚å‚æ•°sigmaï¼‰"
-    # "d3ç”¨æ¥è®¡ç®—D(q)"
+    # "ÇóÍ³¼Æ¾Ømoment"
+    # "d1ÓÃÀ´¼ÆËãtaoqµÄÒ»½×µ¼(ÇóÆæÒìÖµalphaºÍ²ÎÊıbeta")£¬d2ÓÃÀ´¼ÆËãtaoqµÄ¶ş½×µ¼£¨Çó²ÎÊısigma£©"
+    # "d3ÓÃÀ´¼ÆËãD(q)"
     moment = np.zeros((len(layers), len(q)))
     d1 = np.zeros((len(layers), len(q)))
     d2 = np.zeros((len(layers), len(q)))
     d3 = np.zeros((len(layers), len(q)))
-
     for i in range(0, len(layers)):
         distrib = coarseGraining(field, field.shape // scales[i])  ##[x // scales[i] for x infield.shape]
         positiveDist = distrib[distrib > 0]
@@ -269,25 +268,25 @@ def MFRC(option,pic,pathIMERG, path3Mean, pathOutput, pathGWR,fileName):
     print lambd
     logMoment = np.log(moment) / np.log(2)
     logLambd = np.log(lambd) / np.log(2)
-    # "è¯æ˜å…·æœ‰å¹‚å¾‹ç‰¹å¾"# "æ±‚tao(q),tao(q)å°±æ˜¯æ–œç‡"
-    k = np.zeros(len(q))  # å­˜æ”¾æ–œç‡
-    b = np.zeros(len(q))  # å­˜æ”¾æˆªè·
-    # R_Squared = np.zeros(len(q))  # å­˜æ”¾Ræ–¹
+    # "Ö¤Ã÷¾ßÓĞÃİÂÉÌØÕ÷"# "Çótao(q),tao(q)¾ÍÊÇĞ±ÂÊ"
+    k = np.zeros(len(q))  # ´æ·ÅĞ±ÂÊ
+    b = np.zeros(len(q))  # ´æ·Å½Ø¾à
+    # R_Squared = np.zeros(len(q))  # ´æ·ÅR·½
 
-    # x = np.log(lambd) / np.log(2)  # logä»¥2ä¸ºåº•çš„lambda,çº¿æ€§æœ€å°äºŒä¹˜çš„Xè¾“å…¥
-    # X = sm.add_constant(X.T)  # åŠ ä¸Šæˆªè·é¡¹
+    # x = np.log(lambd) / np.log(2)  # logÒÔ2Îªµ×µÄlambda,ÏßĞÔ×îĞ¡¶ş³ËµÄXÊäÈë
+    # X = sm.add_constant(X.T)  # ¼ÓÉÏ½Ø¾àÏî
     for i in range(0, len(q)):
-        # y = np.log(moment[:, i]) / np.log(2)  # logä»¥2ä¸ºåº•çš„momentï¼Œçº¿æ€§æœ€å°äºŒä¹˜çš„Xè¾“å…¥
-        # results = sm.OLS(Y, X).fit()  # logä»¥2ä¸ºåº•çš„momentå’Œlambdaçš„çº¿æ€§æ‹Ÿåˆ
+        # y = np.log(moment[:, i]) / np.log(2)  # logÒÔ2Îªµ×µÄmoment£¬ÏßĞÔ×îĞ¡¶ş³ËµÄXÊäÈë
+        # results = sm.OLS(Y, X).fit()  # logÒÔ2Îªµ×µÄmomentºÍlambdaµÄÏßĞÔÄâºÏ
         line = np.polyfit(logLambd, logMoment[:, i], 1)
-        k[i] = line[0]  # æ–œç‡
-        b[i] = line[1]  # æˆªè·
+        k[i] = line[0]  # Ğ±ÂÊ
+        b[i] = line[1]  # ½Ø¾à
         # R_Squared[i] = results.rsquared
         # print("k:", k[i], "b:", b[i], "Rsquared:", R_Squared[i])
 
-    # "åœ¨å¤šé‡åˆ†å½¢é¢†åŸŸtaoqå°±æ˜¯ä¸Šé¢çš„æ–œç‡ï¼Œä¸çº§è”é™å°ºåº¦ä¸­çš„taoqä¸åŒ"
+    # "ÔÚ¶àÖØ·ÖĞÎÁìÓòtaoq¾ÍÊÇÉÏÃæµÄĞ±ÂÊ£¬Óë¼¶Áª½µ³ß¶ÈÖĞµÄtaoq²»Í¬"
     taoq = -k
-    # "è¯æ˜å…·æœ‰å¤šé‡åˆ†å½¢ç‰¹å¾"#"ç”¨å¤šé‡åˆ†å½¢è°±f(Î±)è¡¨ç¤º"
+    # "Ö¤Ã÷¾ßÓĞ¶àÖØ·ÖĞÎÌØÕ÷"#"ÓÃ¶àÖØ·ÖĞÎÆ×f(¦Á)±íÊ¾"
     alpha = np.zeros(len(q))
     f_alpha = np.zeros(len(q))
     for j in range(0, len(q)):
@@ -295,24 +294,24 @@ def MFRC(option,pic,pathIMERG, path3Mean, pathOutput, pathGWR,fileName):
         alpha[j] = line[0]
         f_alpha[j] = alpha[j] * q[j] -k[j]
 
-    # "è¯æ˜å…·æœ‰å¤šé‡åˆ†å½¢ç‰¹å¾"# "ç”¨å¹¿ä¹‰åˆ†å½¢ç»´æ•°D(q)è¡¨ç¤º"
+    # "Ö¤Ã÷¾ßÓĞ¶àÖØ·ÖĞÎÌØÕ÷"# "ÓÃ¹ãÒå·ÖĞÎÎ¬ÊıD(q)±íÊ¾"
     D_q = np.zeros((len(q)))
     for j in range(0, len(q)):
         line = np.polyfit(np.log(lambd), d3[:, j], 1)
         D_q[j] = line[0]
 
-    # "æ±‚äºŒé˜¶å¯¼ï¼Œç»§è€Œè®¡ç®—Î²å’ŒÏƒï¼Œå°†q=1å¤„ä½œä¸ºè¿”å›å€¼"
-    # "ç”±äºçº§è”é™å°ºåº¦çš„ç ”ç©¶è€…ï¼Œåˆ†å½¢å°ºåº¦ä»ç„¶ä»1åˆ°5ï¼Œå¼ºè¡ŒæŠŠè´Ÿå·ç§»åˆ°äº†taoqä¸Šï¼Œæ‰€ä»¥åœ¨Xuç­‰çš„é™å°ºåº¦ä¸­ï¼Œtaoqå·²ç»å˜åŒ–ï¼Œå¢åŠ æ¥è‡ªÎ»çš„è´Ÿå·"
+    # "Çó¶ş½×µ¼£¬¼Ì¶ø¼ÆËã¦ÂºÍ¦Ò£¬½«q=1´¦×÷Îª·µ»ØÖµ"
+    # "ÓÉÓÚ¼¶Áª½µ³ß¶ÈµÄÑĞ¾¿Õß£¬·ÖĞÎ³ß¶ÈÈÔÈ»´Ó1µ½5£¬Ç¿ĞĞ°Ñ¸ººÅÒÆµ½ÁËtaoqÉÏ£¬ËùÒÔÔÚXuµÈµÄ½µ³ß¶ÈÖĞ£¬taoqÒÑ¾­±ä»¯£¬Ôö¼ÓÀ´×Ô¦ËµÄ¸ººÅ"
     # scales = scales[::-1]
     # print (scales)
 
     d1taoq  = -alpha
     d2taoq = np.zeros(len(q))
     for j in range(0, len(q)):
-        d2[:, j] = d2[::, j]        #-å·
+        d2[:, j] = d2[::, j]        #-ºÅ
         line = np.polyfit(np.log(lambd), d2[:, j], 1)
         d2taoq[j] = -line[0]
-    # print 'taoqçš„ä¸€é˜¶å¯¼ï¼š',d1taoq,'\n','taoqçš„äºŒé˜¶å¯¼ï¼š',d2taoq
+    # print 'taoqµÄÒ»½×µ¼£º',d1taoq,'\n','taoqµÄ¶ş½×µ¼£º',d2taoq
 
     e = 0
     v = 1
@@ -320,12 +319,12 @@ def MFRC(option,pic,pathIMERG, path3Mean, pathOutput, pathGWR,fileName):
         # print q[i]
         if (q[i] >= 1):
             if (option == "MF"):
-                # "Xæ˜¯æ ‡å‡†æ­£æ€åˆ†å¸ƒ"
+                # "XÊÇ±ê×¼ÕıÌ¬·Ö²¼"
                 sigma = math.sqrt(d2taoq[i] / (dimension * np.log(branch**2)))
                 beta = 1 + d1taoq[i] / dimension - sigma ** 2 * np.log(branch ** 2) * (q[i] - 0.5)
             else:
-                # "Xæ˜¯éæ ‡å‡†æ­£æ€åˆ†å¸ƒ"
-                # "éœ€è¦è®¡ç®—åŸæ•°æ®çš„å‡å€¼å’Œæ–¹å·®"
+                # "XÊÇ·Ç±ê×¼ÕıÌ¬·Ö²¼"
+                # "ĞèÒª¼ÆËãÔ­Êı¾İµÄ¾ùÖµºÍ·½²î"
                 data = np.array(arrIMERG).reshape(row * col, 1)
                 d = []
                 for j in range(0, row * col):
@@ -341,9 +340,9 @@ def MFRC(option,pic,pathIMERG, path3Mean, pathOutput, pathGWR,fileName):
     exportPlot(logLambd,logMoment,k,b,q,alpha,f_alpha,taoq,D_q,pathAnalysis,fileName,pic,beta,sigma,e,v)
 
     timeOfprocess=time.clock() - timeOfprocess
-    print "å¤šé‡åˆ†å½¢ç‰¹å¾åˆ†æåŠå‚æ•°è®¡ç®—è€—æ—¶=", timeOfprocess, "ç§’"
+    print "¶àÖØ·ÖĞÎÌØÕ÷·ÖÎö¼°²ÎÊı¼ÆËãºÄÊ±=", timeOfprocess, "Ãë"
 
-    # "å®é™…é™å°ºåº¦å¹¶å¾—åˆ°ç»“æœ"
+    # "Êµ¼Ê½µ³ß¶È²¢µÃµ½½á¹û"
     fieldAll = []
     cascade = []
     for i in range(0, n + 1):
@@ -352,7 +351,7 @@ def MFRC(option,pic,pathIMERG, path3Mean, pathOutput, pathGWR,fileName):
 
     gamma = beta - sigma * e - v * sigma ** 2 * np.log(branch**2) / 2
 
-    # "å¾ªç¯mæ¬¡"
+    # "Ñ­»·m´Î"
     for k in range(0, m):
         for i in range(row):
             for j in range(col):
@@ -393,14 +392,14 @@ def MFRC(option,pic,pathIMERG, path3Mean, pathOutput, pathGWR,fileName):
         # np.savetxt('F:/Test/OUT/'+"fieldAll"+str(k)+""+".txt",fieldMatrix,fmt = '%.8f')
         fieldAll.append(fieldMatrix)
 
-    # "æ±‚å¤šæ¬¡ç»“æœå¹³å‡å€¼"
+    # "Çó¶à´Î½á¹ûÆ½¾ùÖµ"
     fieldAve = np.zeros((row * 2 ** n, col * 2 ** n), np.double)
     for k in range(0, m):
         fieldAve = fieldAve + fieldAll[k]
     fieldAve = fieldAve / m
     # np.savetxt('F:/Test/OUT/'+"fieldAve"+"ave"+".txt", fieldAve,fmt = '%.8f')
 
-    # "æ¢å¤å¼‚è´¨æ€§"
+    # "»Ö¸´ÒìÖÊĞÔ"
     fieldHeter = np.zeros((row * 2 ** n, col * 2 ** n), np.double)
     for i in range(0, row):
         for j in range(0, col):
@@ -418,19 +417,19 @@ def MFRC(option,pic,pathIMERG, path3Mean, pathOutput, pathGWR,fileName):
     # result = np.array(result).reshape(row * 2 ** n * col * 2 ** n, 1)
     # np.savetxt(path + 'out/' + "r" + option + ".txt", result, fmt='%.8f')
 
-    # è¾“å‡ºæ•°æ®ï¼Œåˆ¶ä½œæ …æ ¼
+    # Êä³öÊı¾İ£¬ÖÆ×÷Õ¤¸ñ
     tempRaster = arcpy.NumPyArrayToRaster(fieldHeter,lowerLeft,cellWidth,cellHeight)
     onekmRaster=pathResultRaster + 'r'+fileName+".tif"
-    arcpy.Resample_management(tempRaster, onekmRaster, outResolution, "BILINEAR")   #"é‡é‡‡æ ·åˆ°1km"
+    arcpy.Resample_management(tempRaster, onekmRaster, outResolution, "BILINEAR")   #"ÖØ²ÉÑùµ½1km"
 
     timeOfprocess=time.clock() - timeOfprocess
-    print "é™å°ºåº¦è®¡ç®—è€—æ—¶=", timeOfprocess, "ç§’"
+    print "½µ³ß¶È¼ÆËãºÄÊ±=", timeOfprocess, "Ãë"
 def main():
 
     tt=time.clock()
 
-    option = 'MF'  # 'MFn'   'MFn-GWR'    æ§åˆ¶é€‰æ‹©ä¸€ç§åˆ†å½¢
-    pic = 'Y'  # 'N' æ§åˆ¶æ˜¯å¦åˆ¶ä½œç‰¹å¾å›¾
+    option = 'MF'  # 'MFn'   'MFn-GWR'    ¿ØÖÆÑ¡ÔñÒ»ÖÖ·ÖĞÎ
+    pic = 'Y'  # 'N' ¿ØÖÆÊÇ·ñÖÆ×÷ÌØÕ÷Í¼
 
     for i in range(11,12):
 
@@ -452,11 +451,11 @@ def main():
     #
     # for raster in rasters:
     #     out3=pathOutput + 'RG/' +raster[0:7]+'.shp'
-    #     ExtractValuesToPoints(points, raster, out3, "INTERPOLATE", "VALUE_ONLY")  #"å€¼æå–åˆ°ç‚¹"
+    #     ExtractValuesToPoints(points, raster, out3, "INTERPOLATE", "VALUE_ONLY")  #"ÖµÌáÈ¡µ½µã"
     #
     #     out4=pathOutput + 'Excels/' +raster[0:7]+'.xls'
-    #     arcpy.TableToExcel_conversion(out3, out4)  # "è¡¨è½¬Excel"
+    #     arcpy.TableToExcel_conversion(out3, out4)  # "±í×ªExcel"
     #
-    # print "æ€»èŠ±è´¹æ—¶é—´ä¸ºï¼š",time.clock()-tt,"ç§’"\
+    # print "×Ü»¨·ÑÊ±¼äÎª£º",time.clock()-tt,"Ãë"\
 
 main()
