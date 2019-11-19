@@ -2,21 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="0d2215d8-b8b4-4207-9d4a-61ef0bd12d69" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/1thPaper/CodesPreExtreme.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/2thPaper/ToLD.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/2thPaper/ToZhangKangNi.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ExtractProcess.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/GraduationWork/Data_Process.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/GraduationWork/Temp.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/GraduationWork/winSelection.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Temp.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/TempJupyter.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/myCode.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/myCode.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/2thPaper/DataProcess.py" beforeDir="false" afterPath="$PROJECT_DIR$/2thPaper/DataProcess.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/2thPaper/MFRC.py" beforeDir="false" afterPath="$PROJECT_DIR$/2thPaper/MFRC.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/2thPaper/Temp.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/2thPaper/TempMF.py" beforeDir="false" afterPath="$PROJECT_DIR$/2thPaper/TempMF.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -112,7 +101,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="SearchEverywhereHistoryKey" value="add_field&#9;null&#9;null&#10;file&#9;null&#9;null" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../WF" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="restartRequiresConfirmation" value="false" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
